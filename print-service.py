@@ -38,59 +38,79 @@ import lxml
 class Transcription:
     """The main object of the script, defining the properties of the text under processing."""
 
-    def __init__(self, input, input_source):
+    def __init__(self, input):
         self.input = input
-        self.input_source = input_source
-        # Set parameters depending on source
-        if self.input_source == "scta":
-            self.scta = True
-            self.local = False
-            self.scta_resource = lbppy.Resource.find(input)
-            self.scta_manifestation_transcriptions = [m.resource().canonical_transcription()
-                                        for m in self.scta_resource.manifestations()]
-            self.scta_critical_transcription = [
-                trans for trans in self.scta_manifestation_transcriptions
-                if trans.resource().transcription_type() == 'critical'][0]
-        elif self.input_source == "local":
-            self.scta = False
-            self.local = True
-            self.scta_resource = False
-            self.scta_manifestation_transcriptions = False
-            self.scta_critical_transcription = False
-        self.file = self.__define_file__()
-        self.lbp_schema_version = self.__get_schema_version__()
 
-    def __get_schema_version__(self):
+    def get_schema_info(self):
+        """Return schema version info."""
+        pass
+
+    def __define_file(self):
+        """Return file object.
+        """
+        pass
+
+class LocalTranscription(Transcription):
+    """Object for handling local files."""
+
+    def __init__(self, input):
+        Transcription.__init__(self, input)
+        self.file = self.__define_file()
+        self.lbp_schema_info = self.get_schema_info()
+
+    def get_schema_info(self):
         """Return the validation schema version."""
-        if self.scta:
-            return self.scta_critical_transcription.resource().file().validating_schema_version()
+        schemaRef_number = lxml.etree.parse(self.file).xpath(
+            "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
+            namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
+        )[0]                # The returned result is a list. Grab first element.
+        if schemaRef_number:
+            return {
+                'version': schemaRef_number.split('-')[2],
+                'type': schemaRef_number.split('-')[1]
+            }
         else:
-            xml_obj = lxml.etree.parse(self.file)
-            schemaRef_number = xml_obj.xpath(
-                "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
-                namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
-            )[0]                # The returned result is a list. Grab first element.
-            if schemaRef_number:
-                return schemaRef_number.split('-')[2]
-            else:
-                raise BufferError('The document does not contain a value in TEI/teiHeader/encodingDesc/schemaRef[@n]')
+            raise BufferError('The document does not contain a value in TEI/teiHeader/encodingDesc/schemaRef[@n]')
 
-    def __define_file__(self):
+    def __define_file(self):
+        """Return the file object.
+        """
+        file_argument = self.input
+        if os.path.isfile(file_argument):
+            return open(file_argument)
+        else:
+            raise IOError( f"The supplied argument ({file_argument}) is not a file." )
+
+
+class RemoteTranscription(Transcription):
+    def __init__(self, input):
+        Transcription.__init__(self, input)
+        self.resource = lbppy.Resource.find(input)
+        self.canonical_transcriptions = [m.resource().canonical_transcription()
+                                         for m in self.resource.manifestations()]
+        self.transcription_object = [trans for trans in self.canonical_transcriptions
+                                     if trans.resource().transcription_type() == 'critical'][0]
+        if not self.transcription_object:
+            # If no critical, can we just take the first diplomatic? Better alternatives?
+            self.transcription_object = self.canonical_transcriptions[0]
+        self.file = self.__define_file()
+        self.lbp_schema_info = self.get_schema_info()
+
+    def get_schema_info(self):
+        """Return the validation schema version."""
+        return {
+            'version': self.transcription_object.resource().file().validating_schema_version(),
+            'type': self.transcription_object.resource().transcription_type()
+        }
+
+    def __define_file(self):
         """Determine whether the file input supplied is local or remote and return its file object.
         """
-        if self.scta:
-            logging.debug("Remote resource located. Downloading ...")
-            transcription_file, _ = urllib.request.urlretrieve(
-                self.scta_critical_transcription.resource().file().file().geturl()
-            )
-            logging.info("Download of remote resource finished.")
-
-        elif self.local:
-            file_argument = self.input
-            if os.path.isfile(file_argument):
-                transcription_file = file_argument
-            else:
-                raise IOError( f"The supplied argument ({file_argument}) is not a file." )
+        logging.debug("Remote resource located. Downloading ...")
+        transcription_file, _ = urllib.request.urlretrieve(
+            self.transcription_object.resource().file().file().geturl()
+        )
+        logging.info("Download of remote resource finished.")
         return open(transcription_file)
 
 
@@ -124,17 +144,13 @@ if __name__ == "__main__":
     logging.info('App initialized.')
     logging.info('Logging initialized.')
 
+    # Initialize the object
     if args["--scta"]:
-        file_argument = args["<expression-id>"]
-        input_source = "scta"
+        transcription = RemoteTranscription(args["<expression-id>"])
     elif args["--local"]:
-        file_argument = args["<file>"]
-        input_source = "local"
+        transcription = LocalTranscription(args["<file>"])
     else:
         raise IOError("Either provide an expression-id or a reference to a local file.")
-
-    # Initialize the object
-    transcription = Transcription(file_argument, input_source)
 
     # schema_version = get_lbp_version(transcription_xml)
     # xslt_script = select_xslt_script(schema_version)
