@@ -155,18 +155,16 @@ def compile_tex(tex_file):
     This requires `latexmk` and `xelatex`.
 
     Keyword Arguments:
-    xml_buffer -- the content of the xml file under conversion
-    xslt_script -- the content of the xslt script used for the conversion
+    tex_file -- the tex file object to be converted.
 
     Return: Output file object.
     """
-    logging.info(f"Start compilation of {tex_file}")
+    logging.info(f"Start compilation of {tex_file.name}")
     process_out = subprocess.run(['latexmk', f'{tex_file.name}', '-xelatex',
                                   '-output-directory=output'], stdout=subprocess.PIPE).stdout
     logging.debug(process_out.decode('utf-8'))
     output_basename, _ = os.path.splitext(tex_file.name)
     return open(output_basename + '.pdf')
-
 
 def select_xlst_script(trans_obj):
     """Determine which xslt should be used.
