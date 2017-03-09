@@ -70,7 +70,8 @@ class LocalTranscription(Transcription):
                 'type': schemaRef_number.split('-')[1]
             }
         else:
-            raise BufferError('The document does not contain a value in TEI/teiHeader/encodingDesc/schemaRef[@n]')
+            raise BufferError('The document does not contain a value in '\
+                              'TEI/teiHeader/encodingDesc/schemaRef[@n]')
 
     def __define_file(self):
         """Return the file object.
