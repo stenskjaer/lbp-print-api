@@ -212,9 +212,9 @@ if __name__ == "__main__":
 
     # Setup logging
     log_formatter = logging.Formatter()
-    # verbosity = args['--verbosity']
-    # if not verbosity:
-    verbosity = 'DEBUG'
+    verbosity = args['--verbosity']
+    if not verbosity:
+        verbosity = 'DEBUG'
     logging.basicConfig(level=verbosity.upper(), format="%(levelname)s: %(message)s")
     logging.debug(args)
 
