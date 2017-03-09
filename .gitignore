@@ -1,5 +1,6 @@
 ### Custom material from the directory ###
 /data/
+/output/
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
