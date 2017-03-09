@@ -125,17 +125,25 @@ def convert_xml_to_tex(xml_file, xslt_script):
     xslt_script -- the content of the xslt script used for the conversion
 
     Return: File object.
-
     """
     logging.debug(f"Start conversion of {xml_file}")
     tex_buffer =  subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
                                  stdout=subprocess.PIPE).stdout.decode('utf-8')
+    # Output dir preparation: Create if not exists, empty if exists.
     if not 'output' in os.listdir('.'):
         os.mkdir('./output/')
-    with open('./output/output.tex', 'w') as f:
+    else:
+        for (root, dirs, files) in os.walk('output'):
+            for name in files:
+                os.remove(os.path.join(root, name))
+
+    # Output file name based on transcription object.
+    basename, _ = os.path.splitext(os.path.basename(xml_file))
+    with open(f'./output/{basename}.tex', 'w') as f:
         f.write(tex_buffer)
     return f
 
+def compile_tex(tex_file):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
     saxon installed.
 
