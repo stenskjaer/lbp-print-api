@@ -248,7 +248,7 @@ if __name__ == "__main__":
     tex_file = convert_xml_to_tex(transcription.file.name, xslt_script, output_dir)
 
     if args["pdf"]:
-        print(compile_tex(tex_file))
+        pdf_file = compile_tex(tex_file)
 
 
     logging.info('Results returned sucessfully.')
