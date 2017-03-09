@@ -3,8 +3,8 @@
 """LBP print as a service.
 
 Usage:
-  lbp-print-service.py tex --local <file>
-  lbp-print-service.py tex --scta <expression-id>
+  lbp-print-service.py (tex|pdf) [options] --local <file>
+  lbp-print-service.py (tex|pdf) [options] --scta <expression-id>
 
 Pull LBP-compliant files from SCTA repositories, convert them into tex or pdf.
 
@@ -218,9 +218,8 @@ if __name__ == "__main__":
         transcription = LocalTranscription(args["<file>"])
     else:
         raise IOError("Either provide an expression-id or a reference to a local file.")
+    if args["pdf"]:
+        print(compile_tex(tex_file))
 
-    # schema_version = get_lbp_version(transcription_xml)
-    # xslt_script = select_xslt_script(schema_version)
-    # tex_buffer = convert_xml_to_tex(transcription_xml, "./critical.xslt")
 
     logging.info('Results returned sucessfully.')
