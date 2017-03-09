@@ -84,6 +84,11 @@ class LocalTranscription(Transcription):
 
 
 class RemoteTranscription(Transcription):
+    """Object for handling remote transcriptions.
+
+    Keyword arguments:
+    input -- SCTA resource id of the text to be processed.
+    """
     def __init__(self, input):
         Transcription.__init__(self, input)
         self.resource = lbppy.Resource.find(input)
