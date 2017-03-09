@@ -115,6 +115,27 @@ class RemoteTranscription(Transcription):
 
 
 def convert_xml_to_tex(xml_file, xslt_script):
+    """Convert the list of encoded files to plain text, using the auxilary XSLT script.
+
+    The function creates a output dir in the current working dir and puts the tex file in that
+    directory. The function requires saxon installed.
+
+    Keyword Arguments:
+    xml_buffer -- the content of the xml file under conversion
+    xslt_script -- the content of the xslt script used for the conversion
+
+    Return: File object.
+
+    """
+    logging.debug(f"Start conversion of {xml_file}")
+    tex_buffer =  subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
+                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
+    if not 'output' in os.listdir('.'):
+        os.mkdir('./output/')
+    with open('./output/output.tex', 'w') as f:
+        f.write(tex_buffer)
+    return f
+
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
     saxon installed.
 
