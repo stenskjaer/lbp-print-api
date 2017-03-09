@@ -144,18 +144,23 @@ def convert_xml_to_tex(xml_file, xslt_script):
     return f
 
 def compile_tex(tex_file):
-    """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
-    saxon installed.
+    """Convert a tex file to pdf with XeLaTeX.
+
+    This requires `latexmk` and `xelatex`.
 
     Keyword Arguments:
     xml_buffer -- the content of the xml file under conversion
     xslt_script -- the content of the xslt script used for the conversion
 
-    Return: Latex buffer.
+    Return: Output file object.
     """
-    logging.debug(f"Start conversion of {xml_file}")
-    return subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
-                          stdout=subprocess.PIPE).stdout
+    logging.info(f"Start compilation of {tex_file}")
+    process_out = subprocess.run(['latexmk', f'{tex_file.name}', '-xelatex',
+                                  '-output-directory=output'], stdout=subprocess.PIPE).stdout
+    logging.debug(process_out.decode('utf-8'))
+    output_basename, _ = os.path.splitext(tex_file.name)
+    return open(output_basename + '.pdf')
+
 
 def select_xlst_script(trans_obj):
     """Determine which xslt should be used.
