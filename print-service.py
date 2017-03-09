@@ -227,7 +227,8 @@ if __name__ == "__main__":
     elif args["--local"]:
         transcription = LocalTranscription(args["<file>"])
     else:
-        raise IOError("Either provide an expression-id or a reference to a local file.")
+        raise ValueError("Either provide an expression-id or a reference to a local file.")
+
     # Determine xslt script file (either provided or selected based on the xml transcription)
     if args["--xslt"]:
         xslt_candidate = args["--xslt"]
