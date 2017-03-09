@@ -21,6 +21,7 @@ Options:
                           SCTA database.
   --local                 Boolean. Process local file.
   --xslt <file>           Use a custom xslt file in place of the default supplied templates.
+  --output, -o <dir>      Put results in the specified directory.
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: debug].
   -v, --version           Show version and exit.
   -h, --help              Show this help message and exit.
@@ -121,7 +122,7 @@ class RemoteTranscription(Transcription):
         return open(transcription_file)
 
 
-def convert_xml_to_tex(xml_file, xslt_script):
+def convert_xml_to_tex(xml_file, xslt_script, output=False):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script.
 
     The function creates a output dir in the current working dir and puts the tex file in that
@@ -136,17 +137,25 @@ def convert_xml_to_tex(xml_file, xslt_script):
     logging.debug(f"Start conversion of {xml_file}")
     tex_buffer =  subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
                                  stdout=subprocess.PIPE).stdout.decode('utf-8')
-    # Output dir preparation: Create if not exists, empty if exists.
-    if not 'output' in os.listdir('.'):
-        os.mkdir('./output/')
+    # Output dir preparation: If output flags, check that dir and set, if not,
+    # create or empty the dir "output" in curent working dir.
+    if output:
+        if os.path.isdir(output):
+            output_dir = output
+        else:
+            raise ValueError(f"The supplied output dir, {output}, is not a directory.")
     else:
-        for (root, dirs, files) in os.walk('output'):
-            for name in files:
-                os.remove(os.path.join(root, name))
+        output_dir = 'output'
+        if not output_dir in os.listdir('.'):
+            os.mkdir(output_dir)
+        else:
+            for (root, dirs, files) in os.walk(output_dir):
+                for name in files:
+                    os.remove(os.path.join(root, name))
 
     # Output file name based on transcription object.
     basename, _ = os.path.splitext(os.path.basename(xml_file))
-    with open(f'./output/{basename}.tex', 'w') as f:
+    with open(os.path.join(output_dir, basename + '.tex'), 'w') as f:
         f.write(tex_buffer)
     return f
 
@@ -228,6 +237,15 @@ if __name__ == "__main__":
             raise FileNotFoundError(f"The xslt file supplied, {xslt_candidate}, was not found.")
     else:
         xslt_script = select_xlst_script(transcription)
+
+    # Determine output directory
+    if args["--output"]:
+        output_dir = args["--output"]
+    else:
+        output_dir = False
+
+    tex_file = convert_xml_to_tex(transcription.file.name, xslt_script, output_dir)
+
     if args["pdf"]:
         print(compile_tex(tex_file))
 
