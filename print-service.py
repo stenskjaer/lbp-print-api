@@ -20,6 +20,7 @@ Options:
   --scta                  Boolean. When True, the <identifier> should be an expression id of the
                           SCTA database.
   --local                 Boolean. Process local file.
+  --xslt <file>           Use a custom xslt file in place of the default supplied templates.
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: debug].
   -v, --version           Show version and exit.
   -h, --help              Show this help message and exit.
@@ -218,6 +219,15 @@ if __name__ == "__main__":
         transcription = LocalTranscription(args["<file>"])
     else:
         raise IOError("Either provide an expression-id or a reference to a local file.")
+    # Determine xslt script file (either provided or selected based on the xml transcription)
+    if args["--xslt"]:
+        xslt_candidate = args["--xslt"]
+        if os.path.isfile(xslt_candidate):
+            xslt_script = xslt_candidate
+        else:
+            raise FileNotFoundError(f"The xslt file supplied, {xslt_candidate}, was not found.")
+    else:
+        xslt_script = select_xlst_script(transcription)
     if args["pdf"]:
         print(compile_tex(tex_file))
 
