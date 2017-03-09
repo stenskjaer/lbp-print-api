@@ -149,6 +149,35 @@ def convert_xml_to_tex(xml_file, xslt_script):
     return subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
                           stdout=subprocess.PIPE).stdout
 
+def select_xlst_script(trans_obj):
+    """Determine which xslt should be used.
+
+    If a URL is provided, the script is downloaded and stored temporarily. If a local file is
+    provided, its location is used.
+
+    Keyword Arguments:
+    -- trans_obj: Required. The object of the text under processing.
+    -- url: The url of an external script.
+    -- local: The location of a local script.
+
+    Return: Directory as string.
+    """
+    schema_info = trans_obj.lbp_schema_info
+    if schema_info['type'] == 'critical':
+        xslt_document_type = 'critical'
+    else:
+        xslt_document_type = 'diplomatic'
+    xslt_version = schema_info['version']
+    top = './xslt'
+    if xslt_version in os.listdir(top):
+        if xslt_document_type + '.xslt' in os.listdir(os.path.join(top, xslt_version)):
+            return os.path.relpath(os.path.join(top, xslt_version, xslt_document_type)) + '.xslt'
+        else:
+            raise FileNotFoundError(f"The file '{xslt_document_type}.xslt' was not found in '\
+                                    {os.path.join(top, xslt_version)}.")
+    else:
+        raise NotADirectoryError(f"A directory for version {xslt_version} was not found in {top}")
+
 if __name__ == "__main__":
 
     # Read command line arguments
