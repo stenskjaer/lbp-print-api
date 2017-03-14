@@ -30,7 +30,6 @@ Options:
 from docopt import docopt
 import subprocess
 import logging
-import untangle
 import lbppy
 import urllib
 import os
@@ -40,8 +39,8 @@ import lxml
 class Transcription:
     """The main object of the script, defining the properties of the text under processing."""
 
-    def __init__(self, input):
-        self.input = input
+    def __init__(self, input_argument):
+        self.input = input_argument
 
     def get_schema_info(self):
         """Return schema version info."""
@@ -62,17 +61,17 @@ class LocalTranscription(Transcription):
 
     def get_schema_info(self):
         """Return the validation schema version."""
-        schemaRef_number = lxml.etree.parse(self.file).xpath(
+        schemaref_number = lxml.etree.parse(self.file).xpath(
             "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
             namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
         )[0]                # The returned result is a list. Grab first element.
-        if schemaRef_number:
+        if schemaref_number:
             return {
-                'version': schemaRef_number.split('-')[2],
-                'type': schemaRef_number.split('-')[1]
+                'version': schemaref_number.split('-')[2],
+                'type': schemaref_number.split('-')[1]
             }
         else:
-            raise BufferError('The document does not contain a value in '\
+            raise BufferError('The document does not contain a value in '
                               'TEI/teiHeader/encodingDesc/schemaRef[@n]')
 
     def __define_file(self):
@@ -82,7 +81,7 @@ class LocalTranscription(Transcription):
         if os.path.isfile(file_argument):
             return open(file_argument)
         else:
-            raise IOError( f"The supplied argument ({file_argument}) is not a file." )
+            raise IOError(f"The supplied argument ({file_argument}) is not a file.")
 
 
 class RemoteTranscription(Transcription):
@@ -123,7 +122,7 @@ class RemoteTranscription(Transcription):
 
 
 def convert_xml_to_tex(xml_file, xslt_script, output=False):
-    """Convert the list of encoded files to plain text, using the auxilary XSLT script.
+    """Convert the list of encoded files to tex, using the auxiliary XSLT script.
 
     The function creates a output dir in the current working dir and puts the tex file in that
     directory. The function requires saxon installed.
@@ -135,10 +134,10 @@ def convert_xml_to_tex(xml_file, xslt_script, output=False):
     Return: File object.
     """
     logging.debug(f"Start conversion of {xml_file}")
-    tex_buffer =  subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
-                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
+    tex_buffer = subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
     # Output dir preparation: If output flags, check that dir and set, if not,
-    # create or empty the dir "output" in curent working dir.
+    # create or empty the dir "output" in current working dir.
     if output:
         if os.path.isdir(output):
             output_dir = output
@@ -159,6 +158,7 @@ def convert_xml_to_tex(xml_file, xslt_script, output=False):
         f.write(tex_buffer)
     return f
 
+
 def compile_tex(tex_file):
     """Convert a tex file to pdf with XeLaTeX.
 
@@ -175,6 +175,7 @@ def compile_tex(tex_file):
     logging.debug(process_out.decode('utf-8'))
     output_basename, _ = os.path.splitext(tex_file.name)
     return open(output_basename + '.pdf')
+
 
 def select_xlst_script(trans_obj):
     """Determine which xslt should be used.
