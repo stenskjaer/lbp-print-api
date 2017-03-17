@@ -1,9 +1,16 @@
+click==6.7
 docopt==0.6.2
+Flask==0.12
+Flask-WTF==0.14.2
 isodate==0.5.4
 lbppy==0.0.0
+itsdangerous==0.24
+Jinja2==2.9.5
 lxml==3.7.3
+MarkupSafe==1.0
 pyparsing==2.2.0
 rdflib==4.2.2
 SPARQLWrapper==1.8.0
 untangle==1.1.0
-wheel==0.24.0
+Werkzeug==0.12
+WTForms==2.1

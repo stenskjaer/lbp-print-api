@@ -1,0 +1,14 @@
+{% from "_formhelpers.html" import render_field %}
+<form method=post>
+  {{ form.csrf_token }}
+  <dl>
+      {{ render_field(form.xml_upload_remote) }}
+      {{ render_field(form.xslt_upload_remote) }}
+      {{ render_field(form.pdf_tex) }}
+      {{ render_field(form.scta_id) }}
+      {{ render_field(form.xml_upload) }}
+      {{ render_field(form.xslt_upload) }}
+  </dl>
+  <p><input type=submit value="Run">
+</form>
+
