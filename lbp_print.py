@@ -3,8 +3,8 @@
 """LBP print as a service.
 
 Usage:
-  lbp-print-service.py (tex|pdf) [options] --local <file>
-  lbp-print-service.py (tex|pdf) [options] --scta <expression-id>
+  lbp_print.py (tex|pdf) [options] --local <file>
+  lbp_print.py (tex|pdf) [options] --scta <expression-id>
 
 Pull LBP-compliant files from SCTA repositories, convert them into tex or pdf.
 
@@ -134,7 +134,7 @@ def convert_xml_to_tex(xml_file, xslt_script, output=False):
     Return: File object.
     """
     logging.debug(f"Start conversion of {xml_file}")
-    tex_buffer = subprocess.run(['saxon', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
+    tex_buffer = subprocess.run(['java', '-jar', './vendor/saxon9he.jar', f'-s:{xml_file}', f'-xsl:{xslt_script}'],
                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
     # Output dir preparation: If output flags, check that dir and set, if not,
     # create or empty the dir "output" in current working dir.
