@@ -1,0 +1,31 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LBP Print service</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>LBP Print service</h1>
+    {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+    {% endfor %}
+
+    <section>
+        <p class="lead">
+            See how you LombardPress valid transcriptions or editions can turn out in a print format.
+        </p>
+        <p>
+            Some description text.
+        </p>
+    </section>
+
+    {% block body %}{% endblock %}
+</div>
+<script type="text/javascript" src="{{ url_for('static', filename='js/toggling.js') }}"></script>
+</body>
