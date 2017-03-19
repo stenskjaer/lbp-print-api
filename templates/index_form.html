@@ -1,31 +1,18 @@
 {% extends "frame.html" %}
-{% from "_formhelpers.html" import render_field %}
+{% from "_formhelpers.html" import render_field, render_radio_field %}
 {% block body %}
 
 <section>
-    <form class="framed" method="post">
+    <form class="framed" method="post" enctype="multipart/form-data">
         {{ form.csrf_token }}
 
-        {{ form.xml_upload_remote.label }}
-        <div class="switch-field form-group">
-            <p class="help-block">{{ form.xml_upload_remote.description }}</p>
-            {% for subfield in form.xml_upload_remote %}
-            {{ subfield }}
-            {{ subfield.label(id='label-'+subfield.label.field_id) }}
-            {% endfor %}
-        </div>
+        {{ render_radio_field(form.xml_upload_remote) }}
 
-        <div id="scta_id_container" class="form-group">
-            {{ form.scta_id.label }}
-            <p class="help-block">{{ form.scta_id.description|safe }}</p>
-            {{ form.scta_id }}
-        </div>
+        {{ render_field(form.scta_id, size=40, placeholder="E.g. http://scta.info/resource/da-49-l1q1") }}
 
-        <div id="xml_upload_container" class="form-group">
-            {{ form.xml_upload.label }}
-            <p class="help-block">{{ form.xml_upload.description }}</p>
-            {{ form.xml_upload }}
-        </div>
+        {{ render_field(form.xml_upload) }}
+
+
 
         {{ form.xslt_upload_default.label }}
         <div class="switch-field form-group">
@@ -46,7 +33,7 @@
             <p class="help-block">{{ form.pdf_tex.description }}</p>
             {% for subfield in form.pdf_tex %}
             {{ subfield }}
-            {{ subfield.label(id='label-'+subfield.label.field_id) }}
+            {{ subfield.label }}
             {% endfor %}
         </div>
 
