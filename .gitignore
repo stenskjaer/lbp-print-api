@@ -1,6 +1,7 @@
 ### Custom material from the directory ###
 /data/
 /output/
+/upload/
 
 ### PyCharm ###
 /.idea/
