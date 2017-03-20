@@ -1,14 +1,13 @@
-# Requirements
+# Installing
 
-This script has the following requirements (from the `requirements.txt`):
+Build the docker image:
 ```
-docopt==0.6.2
-isodate==0.5.4
-lbppy==0.0.0
-lxml==3.7.3
-pyparsing==2.2.0
-rdflib==4.2.2
-SPARQLWrapper==1.8.0
-untangle==1.1.0
-wheel==0.24.0
+docker build -t lbp-print .
 ```
+
+In development and testing, run with debugging: 
+```
+docker run -p 5000:5000 -e FLASK_APP=service.py -e FLASK_DEBUG=True lbp-print
+```
+
+**There is not yet a implementation for production!**
