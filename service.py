@@ -37,7 +37,7 @@ class TranscriptionForm(FlaskForm):
                                                  '</a> lists all resource ids of De anima commentaries, '
                                                  'while <a '
                                                  'href="http://scta.info/resource/sententia">scta.info/resource'
-                                                 '/sententia</a> lists all Sentence commentaries, from where the '
+                                                 '/sententia</a> lists all Sentence commentaries, and from there the '
                                                  'resource ids of each the relevant work items.')
     xml_upload = FileField('XML Upload',
                            description='The uploaded file must be valid XML and in comliance with the LombardPress '
