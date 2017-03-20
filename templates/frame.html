@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LBP Print service</title>
+    <title>LombardPress Print service</title>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 
@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>LBP Print service</h1>
+    <h1>LombardPress Print service</h1>
     {% for message in get_flashed_messages() %}
     <div class=flash>{{ message }}</div>
     {% endfor %}
