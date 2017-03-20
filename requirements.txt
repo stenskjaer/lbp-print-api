@@ -5,7 +5,7 @@ Flask-WTF==0.14.2
 isodate==0.5.4
 itsdangerous==0.24
 Jinja2==2.9.5
--e git+git@github.com:stenskjaer/lbp_print.git@e10ea9b19ac6bcf2eba07153315ef5a0ec79c483#egg=lbp_print
+-e git://github.com/stenskjaer/lbp_print.git@615db7180ffc633ccfa8faf63b3bf0afb28a7461#egg=lbp_print
 -e git://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy
 lxml==3.7.3
 MarkupSafe==1.0
