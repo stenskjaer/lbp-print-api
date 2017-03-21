@@ -54,6 +54,8 @@ def upload_file(form_data):
     """
     f = form_data
     filename = secure_filename(f.filename)
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.mkdir(app.config['UPLOAD_FOLDER'])
     file_location = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     f.save(file_location)
     return file_location
