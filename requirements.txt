@@ -5,8 +5,8 @@ Flask-WTF==0.14.2
 isodate==0.5.4
 itsdangerous==0.24
 Jinja2==2.9.5
--e git://github.com/stenskjaer/lbp_print.git@a5914816b70277d7bd85ffe0f6bd4ef22b3a569f#egg=lbp_print
--e git://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy
+-e git+https://github.com/stenskjaer/lbp_print.git@fe56656af9857c3e12d22854d55501704ac9a530#egg=lbp_print-master
+-e git+https://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy-master
 lxml==3.7.3
 MarkupSafe==1.0
 pyparsing==2.2.0
@@ -14,4 +14,5 @@ rdflib==4.2.2
 SPARQLWrapper==1.8.0
 untangle==1.1.0
 Werkzeug==0.12
+wheel==0.24.0
 WTForms==2.1
