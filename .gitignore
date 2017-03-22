@@ -2,6 +2,7 @@
 /data/
 /output/
 /upload/
+/src/
 
 ### PyCharm ###
 /.idea/
