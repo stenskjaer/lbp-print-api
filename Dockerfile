@@ -33,4 +33,4 @@ COPY . /usr/src/app
 
 EXPOSE 5000
 
-CMD python3.6 service.py
+CMD gunicorn -w 4 -b 0.0.0.0:5000 service:app
