@@ -14,19 +14,20 @@ docker build -t lbp-print .
 
 In development and testing, run with debugging: 
 ```
-docker run -p 5000:5000 -e FLASK_APP=service.py -e FLASK_DEBUG=True lbp-print
+docker run -p 5000:5000 lbp-print
 ```
 
 Now the app should be available on [localhost:5000](http://localhost:5000).
 
 # TODO 
 ## Before production
-- [ ] Add description of the app and LBP context.
+- [x] Add description of the app and LBP context.
 - [ ] User feedback during processing.
-- [ ] wsgi interface and nginx setup.
-- [ ] Resource download cache.
+- [x] wsgi interface
+- [ ] Nginx setup?
 - [ ] Proper form input validation.
 
 ## Nice to have
 - [ ] Tests
+- [ ] Resource download cache.
 
