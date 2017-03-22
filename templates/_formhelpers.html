@@ -1,33 +1,33 @@
 {% macro render_field(field) %}
-<div id="{{ field.id }}_container" class="form-group">
+  <div id="{{ field.id }}_container" class="form-group">
     {{ field.label }}
     <p class="help-block">{{ field.description|safe }}</p>
     {{ field(**kwargs)|safe }}
     {% if field.errors %}
-    <ul>
-    {% for error in field.errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
+      <ul>
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
-</div>
+  </div>
 {% endmacro %}
 
 {% macro render_radio_field(field) %}
-{{ field.label }}
-<div class="switch-field form-group">
+  {{ field.label }}
+  <div class="switch-field form-group">
     <p class="help-block">{{ field.description }}</p>
     {% for subfield in field %}
-    {{ subfield }}
-    {{ subfield.label(id='label-'+subfield.label.field_id) }}
+      {{ subfield }}
+      {{ subfield.label(id='label-'+subfield.label.field_id) }}
     {% endfor %}
     {% if field.errors %}
-    <ul>
-    {% for error in field.errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
+      <ul>
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
-</div>
+  </div>
 {% endmacro %}
 

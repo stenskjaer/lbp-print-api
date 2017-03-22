@@ -2,43 +2,43 @@
 {% from "_formhelpers.html" import render_field, render_radio_field %}
 {% block body %}
 
-<section>
+  <section>
     <form class="framed" method="post" enctype="multipart/form-data">
-        {{ form.csrf_token }}
+      {{ form.csrf_token }}
 
-        {{ render_radio_field(form.xml_upload_remote) }}
+      {{ render_radio_field(form.xml_upload_remote) }}
 
-        {{ render_field(form.scta_id, size=40, placeholder="E.g. http://scta.info/resource/da-49-l1q1") }}
+      {{ render_field(form.scta_id, size=40, placeholder="E.g. http://scta.info/resource/da-49-l1q1") }}
 
-        {{ render_field(form.xml_upload) }}
+      {{ render_field(form.xml_upload) }}
 
 
 
-        {{ form.xslt_upload_default.label }}
-        <div class="switch-field form-group">
-            <p class="help-block">{{ form.xslt_upload_default.description }}</p>
-            {% for subfield in form.xslt_upload_default %}
-            {{ subfield }}
-            {{ subfield.label(id='label-'+subfield.label.field_id) }}
-            {% endfor %}
-        </div>
+      {{ form.xslt_upload_default.label }}
+      <div class="switch-field form-group">
+        <p class="help-block">{{ form.xslt_upload_default.description }}</p>
+        {% for subfield in form.xslt_upload_default %}
+          {{ subfield }}
+          {{ subfield.label(id='label-'+subfield.label.field_id) }}
+        {% endfor %}
+      </div>
 
-        <div id="xslt_upload_container" class="form-group">
-            {{ form.xslt_upload.label }}
-            {{ form.xslt_upload }}
-        </div>
+      <div id="xslt_upload_container" class="form-group">
+        {{ form.xslt_upload.label }}
+        {{ form.xslt_upload }}
+      </div>
 
-        {{ form.pdf_tex.label }}
-        <div class="switch-field form-group">
-            <p class="help-block">{{ form.pdf_tex.description }}</p>
-            {% for subfield in form.pdf_tex %}
-            {{ subfield }}
-            {{ subfield.label }}
-            {% endfor %}
-        </div>
+      {{ form.pdf_tex.label }}
+      <div class="switch-field form-group">
+        <p class="help-block">{{ form.pdf_tex.description }}</p>
+        {% for subfield in form.pdf_tex %}
+          {{ subfield }}
+          {{ subfield.label }}
+        {% endfor %}
+      </div>
 
-        <p><input class="btn btn-default" type="submit" value="Run">
+      <p><input class="btn btn-default" type="submit" value="Run">
     </form>
 
-</section>
+  </section>
 {% endblock %}

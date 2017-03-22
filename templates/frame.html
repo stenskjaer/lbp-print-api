@@ -1,58 +1,58 @@
 <!doctype html>
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LombardPress Print service</title>
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LombardPress Print service</title>
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>LombardPress Print service</h1>
-        {% for message in get_flashed_messages() %}
-        <div class=flash>{{ message }}</div>
-        {% endfor %}
+<div class="container">
+  <h1>LombardPress Print service</h1>
+  {% for message in get_flashed_messages() %}
+    <div class=flash>{{ message }}</div>
+  {% endfor %}
 
-        <section>
-            <p class="lead">
-                Test you LombardPress valid transcriptions or editions in a print format.
-            </p>
-            <p>
-                One of the many advantages of encoding transcriptions or editions in
-                a semantic markup language is the separation of presentation and
-                content. This means that the same file can serve different purposes
-                and be used in different contexts. One incarnation may represent the
-                text as a traditional critical edition set up on a print page with
-                one or several critical apparatus, another incarnation may be a
-                interactive web page presenting the text alongside images of a
-                manuscript, and yet another a e-reader friendly version with
-                explanatory notes for students.
-            </p>
-            <p>
-                But this separation of presentation and content also means that it
-                may be difficult to envision how a finished edition may look like.
-                This app provides an easy interface for converting a XML
-                transcription to a pdf document.
-            </p>
-            <p>
-                Your XML document must be valid and in compliance with the
-                <a href="http://lombardpress.org/schema/docs/">LombardPress
-                    Schema</a> for critical and diplomatic editions.
-            </p>
-            <p>
-                You can either upload you own documents or fetch a document from the
-                <a href="http://scta.info">scta database</a>. If you have your own
-                XSLT script for conversion of the XML document, you can upload that.
-                Otherwise the app will use a default Lombard Press transformation
-                script. The script used is based on which version of the
-                LombardPress Schema that the transcription is based on.
-            </p>
-        </section>
+  <section>
+    <p class="lead">
+      Test you LombardPress valid transcriptions or editions in a print format.
+    </p>
+    <p>
+      One of the many advantages of encoding transcriptions or editions in
+      a semantic markup language is the separation of presentation and
+      content. This means that the same file can serve different purposes
+      and be used in different contexts. One incarnation may represent the
+      text as a traditional critical edition set up on a print page with
+      one or several critical apparatus, another incarnation may be a
+      interactive web page presenting the text alongside images of a
+      manuscript, and yet another a e-reader friendly version with
+      explanatory notes for students.
+    </p>
+    <p>
+      But this separation of presentation and content also means that it
+      may be difficult to envision how a finished edition may look like.
+      This app provides an easy interface for converting a XML
+      transcription to a pdf document.
+    </p>
+    <p>
+      Your XML document must be valid and in compliance with the
+      <a href="http://lombardpress.org/schema/docs/">LombardPress
+        Schema</a> for critical and diplomatic editions.
+    </p>
+    <p>
+      You can either upload you own documents or fetch a document from the
+      <a href="http://scta.info">scta database</a>. If you have your own
+      XSLT script for conversion of the XML document, you can upload that.
+      Otherwise the app will use a default Lombard Press transformation
+      script. The script used is based on which version of the
+      LombardPress Schema that the transcription is based on.
+    </p>
+  </section>
 
-        {% block body %}{% endblock %}
-    </div>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/toggling.js') }}"></script>
+  {% block body %}{% endblock %}
+</div>
+<script type="text/javascript" src="{{ url_for('static', filename='js/toggling.js') }}"></script>
 </body>
