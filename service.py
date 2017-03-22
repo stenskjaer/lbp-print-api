@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, flash
+from flask import Flask, render_template, send_file
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired
+from flask_wtf.file import FileField
 from wtforms import RadioField, StringField
 from werkzeug.utils import secure_filename
 
@@ -60,11 +60,7 @@ def upload_file(form_data):
     f.save(file_location)
     return file_location
 
-@app.route('/success')
-def success():
-    return render_template('process.html', form=request.args.get('form'))
 
-# Function resource ID: http://scta.info/resource/da-49-l1q1
 @app.route('/', methods=('GET', 'POST'))
 def submit():
     form = TranscriptionForm()
