@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, Response
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
 from wtforms import RadioField, StringField
@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 
 import lbp_print
 import os
+import subprocess
+import io
 
 app = Flask(__name__, instance_path=os.getcwd())
 app.config.from_object(__name__)  # load config from this file
@@ -15,6 +17,16 @@ app.config.update(dict(
     PASSWORD='default',
     UPLOAD_FOLDER=os.path.join(app.instance_path, 'upload')
 ))
+
+
+import logging
+
+root = logging.getLogger()
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+ch.setFormatter(formatter)
+root.addHandler(ch)
 
 
 class TranscriptionForm(FlaskForm):
@@ -61,9 +73,37 @@ def upload_file(form_data):
     return file_location
 
 
+def stream():
+
+    import pdb; pdb.set_trace()
+    def invoke_subprocess(bufsize):
+        lbp_call = 'python /Users/michael/Documents/coding/SCTA/lbp_print/lbp_print.py pdf --local  /Users/michael/Documents/PhD/transcriptions/aegidius-expositio/da-199-prol/mun2805_da-199-prol.xml --xslt /Users/michael/Documents/PhD/transcriptions/tools/xslt/standalone-print/1.0.0/diplomatic.xslt'
+        return subprocess.Popen(lbp_call, shell=True, stdout=subprocess.PIPE, bufsize=bufsize)
+
+
+    p = invoke_subprocess(1)
+    import pdb; pdb.set_trace()
+    for line in io.open(io_buffer):
+        yield line.rstrip('\n')
+
+
+def stream_template(template_name, **context):
+    app.update_template_context(context)
+    t = app.jinja_env.get_template(template_name)
+    rv = t.stream(context)
+    return rv
+
+
+@app.route('/streamer')
+def streamer():
+    rows = stream()
+    return Response(stream_template('test.html', rows=rows))
+
+
 @app.route('/', methods=('GET', 'POST'))
 def submit():
     form = TranscriptionForm()
+
 
     if form.validate_on_submit():
 
@@ -88,5 +128,5 @@ def submit():
 
     return render_template('index_form.html', form=form)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, use_debugger=True)
+if __name__ == "__main__":
+    app.run(debug=True)
