@@ -1,5 +1,13 @@
-<ul>
-{% for row in rows %}
-  <li>{{ row }}</li>
-{% endfor %}
-</ul>
+{% block body %}
+
+  <ul>
+    {% for row in rows %}
+      <li>
+        {% for line in row.split('\n') %}
+          {{ line }}<br/>
+        {% endfor %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
