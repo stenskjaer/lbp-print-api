@@ -55,6 +55,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+
 class Transcription:
     """The main object of the script, defining the properties of the text under processing."""
 
@@ -70,6 +71,7 @@ class Transcription:
         """
         pass
 
+
 class LocalTranscription(Transcription):
     """Object for handling local files."""
 
@@ -80,13 +82,12 @@ class LocalTranscription(Transcription):
         self.lbp_schema_info = self.get_schema_info()
         logging.info('local trasncription init')
 
-
     def get_schema_info(self):
         """Return the validation schema version."""
         schemaref_number = lxml.etree.parse(self.file).xpath(
             "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
             namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
-        )[0]                # The returned result is a list. Grab first element.
+        )[0]  # The returned result is a list. Grab first element.
         if schemaref_number:
             return {
                 'version': schemaref_number.split('-')[2],
@@ -112,6 +113,7 @@ class RemoteTranscription(Transcription):
     Keyword arguments:
     input -- SCTA resource id of the text to be processed.
     """
+
     def __init__(self, input):
         Transcription.__init__(self, input)
         self.resource = lbppy.Resource.find(input)
@@ -156,11 +158,19 @@ def convert_xml_to_tex(xml_file, xslt_script, output=False):
     Return: File object.
     """
     logging.debug(f"Start conversion of {xml_file}")
-    tex_buffer = subprocess.run(['java', '-jar', os.path.join(MODULE_DIR, 'vendor/saxon9he.jar'), f'-s:{xml_file}', f'-xsl:{xslt_script}'],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+    process = subprocess.Popen(['java', '-jar', os.path.join(MODULE_DIR, 'vendor/saxon9he.jar'),
+                                f'-s:{xml_file}', f'-xsl:{xslt_script}'],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    out, err = process.communicate()
+
+    if err:
+        logging.warning('The XSLT script reported the following warning(s):\n'
+                        + err.decode('utf-8'))
+    tex_buffer = out.decode('utf-8')
+
     # Output dir preparation: If output flags, check that dir and set, if not,
     # create or empty the dir "output" in current working dir.
-
     if output:
         if os.path.isdir(output):
             output_dir = output
@@ -192,12 +202,12 @@ def clean_tex(tex_file):
     """
     logging.info("Trying to remove whitespace...")
     patterns = [
-        (r' ?{ ?', r'{'),                 # Remove redundant space around opening bracket.
-        (r' }', r'}'),                    # Remove redundant space before closing bracket.
-        (r' ([.,?!:;])', r'\1'),          # Remove redundant space before punctuation.
-        (r' (\\edtext{})', r'\1'),        # Remove space before empty lemma app notes.
+        (r' ?{ ?', r'{'),  # Remove redundant space around opening bracket.
+        (r' }', r'}'),  # Remove redundant space before closing bracket.
+        (r' ([.,?!:;])', r'\1'),  # Remove redundant space before punctuation.
+        (r' (\\edtext{})', r'\1'),  # Remove space before empty lemma app notes.
         (r'}(\\edtext{[^}]})', r'} \1'),  # Add missing space between adjacent app. notes.
-        (r'\s+', ' ')
+        (r' +', ' ')
     ]
 
     buffer = open(tex_file.name).read()
@@ -220,13 +230,14 @@ def compile_tex(tex_file):
     Return: Output file object.
     """
     logging.info(f"Start compilation of {tex_file.name}")
-    process = subprocess.Popen(f'latexmk {tex_file.name} -xelatex -output-directory=output',
-                               stdout=subprocess.PIPE, shell=True)
+    subprocess.run(f'latexmk {tex_file.name} -xelatex -output-directory=output',
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    # out, err = process.communicate()
+    #
+    # if err:
+    #     logging.warning('The tex compilation process reported the following warning(s):\n'
+    #                     + err.decode('utf-8'))
 
-    for line in io.open(process.stdout.fileno()):
-        print(line.rstrip('\n'))
-    print(out)
-    logging.debug(process_out.decode('utf-8'))
     output_basename, _ = os.path.splitext(tex_file.name)
     return open(output_basename + '.pdf')
 
@@ -259,6 +270,7 @@ def select_xlst_script(trans_obj):
                                     {os.path.join(top, xslt_version)}.")
     else:
         raise NotADirectoryError(f"A directory for version {xslt_version} was not found in {top}")
+
 
 if __name__ == "__main__":
 
@@ -308,6 +320,5 @@ if __name__ == "__main__":
 
     if args["pdf"]:
         pdf_file = compile_tex(tex_file)
-
 
     logging.info('Results returned sucessfully.')
