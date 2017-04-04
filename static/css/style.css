@@ -19,6 +19,16 @@
     padding: 10px;
 }
 
+.stream {
+    height: 600px;
+    overflow: scroll;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.stream .console-indent {
+    padding-left: 4%;
+}
+
 /*
   RADIO BUTTON STYLING
 */

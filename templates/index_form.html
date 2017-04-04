@@ -2,43 +2,30 @@
 {% from "_formhelpers.html" import render_field, render_radio_field %}
 {% block body %}
 
-  <section>
-    <form class="framed" method="post" enctype="multipart/form-data">
+
+  <section id="form_section" class="framed">
+    <form  id="transcription_form" action="/upload" method="post" enctype="multipart/form-data">
       {{ form.csrf_token }}
+
 
       {{ render_radio_field(form.xml_upload_remote) }}
 
       {{ render_field(form.scta_id, size=40, placeholder="E.g. http://scta.info/resource/da-49-l1q1") }}
 
       {{ render_field(form.xml_upload) }}
+      <div id="xml_upload_list"></div>
 
+      {{ render_radio_field(form.xslt_upload_default) }}
 
+      {{ render_field(form.xslt_upload) }}
+      <div id="xslt_upload_list"></div>
 
-      {{ form.xslt_upload_default.label }}
-      <div class="switch-field form-group">
-        <p class="help-block">{{ form.xslt_upload_default.description }}</p>
-        {% for subfield in form.xslt_upload_default %}
-          {{ subfield }}
-          {{ subfield.label(id='label-'+subfield.label.field_id) }}
-        {% endfor %}
-      </div>
-
-      <div id="xslt_upload_container" class="form-group">
-        {{ form.xslt_upload.label }}
-        {{ form.xslt_upload }}
-      </div>
-
-      {{ form.pdf_tex.label }}
-      <div class="switch-field form-group">
-        <p class="help-block">{{ form.pdf_tex.description }}</p>
-        {% for subfield in form.pdf_tex %}
-          {{ subfield }}
-          {{ subfield.label }}
-        {% endfor %}
-      </div>
+      {{ render_radio_field(form.pdf_tex) }}
 
       <p><input class="btn btn-default" type="submit" value="Run">
     </form>
+
+    <div id="log"></div>
 
   </section>
 {% endblock %}

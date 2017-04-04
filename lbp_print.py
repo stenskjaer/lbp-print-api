@@ -80,22 +80,30 @@ class LocalTranscription(Transcription):
         Transcription.__init__(self, input)
         self.file = self.__define_file()
         self.lbp_schema_info = self.get_schema_info()
-        logging.info('local trasncription init')
 
     def get_schema_info(self):
         """Return the validation schema version."""
-        schemaref_number = lxml.etree.parse(self.file).xpath(
-            "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
-            namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
-        )[0]  # The returned result is a list. Grab first element.
-        if schemaref_number:
+        # TODO: We need validation of the xml before parsing it. This is necesssary for proper user feedback on errors.
+
+        try:
+            schemaref_number = lxml.etree.parse(self.file.name).xpath(
+                "/tei:TEI/tei:teiHeader[1]/tei:encodingDesc[1]/tei:schemaRef[1]/@n",
+                namespaces={"tei": "http://www.tei-c.org/ns/1.0"}
+                )[0]  # The returned result is a list. Grab first element.
             return {
                 'version': schemaref_number.split('-')[2],
                 'type': schemaref_number.split('-')[1]
             }
-        else:
-            raise BufferError('The document does not contain a value in '
-                              'TEI/teiHeader/encodingDesc/schemaRef[@n]')
+        except IndexError as e:
+            logging.error('The document does not seem to contain a value in '
+                          'TEI/teiHeader/encodingDesc/schemaRef[@n]. See the LombardPress documentation for help. '
+                          'If the problem persists, please submit an issue report.')
+            raise
+        except Exception as e:
+            logging.error('The process resulted in an error: {}.\n '
+                          'If the problem persists, please submit an issue report.'.format(e))
+            raise
+
 
     def __define_file(self):
         """Return the file object.
@@ -230,13 +238,16 @@ def compile_tex(tex_file):
     Return: Output file object.
     """
     logging.info(f"Start compilation of {tex_file.name}")
-    subprocess.run(f'latexmk {tex_file.name} -xelatex -output-directory=output',
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    # out, err = process.communicate()
-    #
-    # if err:
-    #     logging.warning('The tex compilation process reported the following warning(s):\n'
-    #                     + err.decode('utf-8'))
+    process = subprocess.Popen(f'latexmk {tex_file.name} -xelatex -output-directory=static/output',
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
+    while True:
+        # latexmk spews output into stdout, while stderr is the bare essentials.
+        line = process.stderr.readline()
+        if line is not b'':
+            logging.info(line.decode('utf-8').replace('\n', ''))
+        else:
+            break
 
     output_basename, _ = os.path.splitext(tex_file.name)
     return open(output_basename + '.pdf')

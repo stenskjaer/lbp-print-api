@@ -1,14 +1,16 @@
-from flask import Flask, render_template, send_file, Response, redirect
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO, emit
 
-from forms import TranscriptionForm
 from werkzeug.utils import secure_filename
-
 import lbp_print
 import os
-import subprocess
-import io
-import sys
+import json
 import multiprocessing
+
+from forms import TranscriptionForm
+from upload_file import UploadFile
+
+
 
 app = Flask(__name__, instance_path=os.getcwd())
 app.config.from_object(__name__)  # load config from this file
@@ -18,17 +20,23 @@ app.config.update(dict(
     PASSWORD='default',
     UPLOAD_FOLDER=os.path.join(app.instance_path, 'upload')
 ))
+socketio = SocketIO(app)
 
 
 import logging
 import logging.handlers
+#
+# root = logging.getLogger()
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+# ch.setFormatter(formatter)
+# root.addHandler(ch)
 
-root = logging.getLogger()
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
+
+# TODO: Wrap up the upload functionality.
+ALLOWED_EXTENSIONS = {'xml', 'xslt'}
+IGNORED_FILES = {'.gitignore'}
 
 
 def upload_file(form_data):
@@ -38,6 +46,7 @@ def upload_file(form_data):
     :param form_data: FileStorage object from form.data.
     :return: file name.
     """
+    # TODO: Build this upload function together with the upload utility
     f = form_data
     filename = secure_filename(f.filename)
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -47,73 +56,133 @@ def upload_file(form_data):
     return file_location
 
 
-@app.route('/', methods=('GET', 'POST'))
+def allowed_file(filename):
+
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route("/upload", methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        # request.files dictionary holds data about the file object. They are indexed by input name value (<input
+        # name="xxx">) but we want to the info even though we don't know the name value in advance, so we need to
+        # always just get the first item in the dictionary (as there will always be just one item).
+        file_obj = next(iter(request.files.values()))
+
+        if file_obj:
+            filename = secure_filename(file_obj.filename)
+            mime_type = file_obj.content_type
+
+            if not allowed_file(file_obj.filename):
+                result = UploadFile(name=filename, type=mime_type, size=0, not_allowed_msg="File type not allowed")
+
+            else:
+                # save file to disk
+                uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_obj.save(uploaded_file_path)
+
+                # get file size after saving
+                size = os.path.getsize(uploaded_file_path)
+
+                # return json for js call back
+                result = UploadFile(name=filename, type=mime_type, size=size)
+
+            return json.dumps({"files": [result.get_file()]})
+
+    else:
+        # TODO: Make proper error handling of upload url when method is not POST.
+        return('Error')
+
+
+@socketio.on('submit_form')
+def process_file(form):
+    # This is only for debugging.
+    emit('server_form_response', {
+        'xml_upload_or_remote': form['xml_upload_or_remote'],
+        'xml_file': form['xml_file'],
+        'scta_id': form['scta_id'],
+        'xslt_default_or_remote': form['xslt_default_or_remote'],
+        'xslt_file': form['xslt_file'],
+        'tex_or_pdf': form['tex_or_pdf'],
+        })
+    # TODO: We really need some form validation action before moving on with the processing.
+
+    # Start the processing
+    stream_processing(form)
+
+    emit('server_form_response', {'content': 'Conversion done!'})
+
+    output_basename, _ = os.path.splitext(form['xml_file'])
+
+    if form['tex_or_pdf'] == 'tex':
+        file_ext = '.tex'
+    else:
+        file_ext = '.pdf'
+    emit('redirect', {'url': os.path.join('static', 'output', output_basename + file_ext)})
+
+
+def stream_processing(form):
+    listener_formatter = logging.Formatter(
+        '%(asctime)s %(processName)-10s %(name)s %(levelname)-8s %(message)s')
+
+    queue = multiprocessing.Queue(0)
+    process_worker = multiprocessing.Process(target=process_function, args=(queue, form))
+    process_worker.start()
+    while True:
+        try:
+            record = queue.get()
+            if record is None:
+                break
+            elif isinstance(record, Exception):
+                raise record
+            emit('server_form_response', {'content': listener_formatter.format(record)})
+            socketio.sleep(0.001)
+        except:
+            raise
+    return record
+
+
+def process_function(queue, form):
+    h = logging.handlers.QueueHandler(queue)
+    root = logging.getLogger()
+    root.addHandler(h)
+    root.setLevel(logging.DEBUG)
+
+    logging.info('Starting conversion...')
+    if form['xml_upload_or_remote'] == 'upload':
+        try:
+            xml_path = os.path.join(app.config['UPLOAD_FOLDER'], form['xml_file'])
+            transcription = lbp_print.LocalTranscription(xml_path)
+        except Exception as e:
+            return queue.put(e)
+    else:
+        transcription = lbp_print.RemoteTranscription(form['scta_id'])
+
+    if form['xslt_default_or_remote'] == 'default':
+        xslt_script = lbp_print.select_xlst_script(transcription)
+    else:
+        xslt_script = upload_file(form['xslt_file'])
+
+    tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output')
+
+    if form['tex_or_pdf'] == 'tex':
+        logging.info('Send tex file.')
+    else:
+        logging.info('Compile tex file.')
+        pdf_file = lbp_print.compile_tex(tex_file)
+
+    return queue.put(None)
+
+
+@app.route('/')
 def submit():
     form = TranscriptionForm()
-
-
-    if form.validate_on_submit():
-
-
-        def stream_template(template_name, **context):
-            app.update_template_context(context)
-            t = app.jinja_env.get_template(template_name)
-            rv = t.stream(context)
-            return rv
-
-        def process_function(queue, transcription):
-            h = logging.handlers.QueueHandler(queue)
-            root = logging.getLogger()
-            root.addHandler(h)
-            root.setLevel(logging.DEBUG)
-
-            if form.xslt_upload_default.data == 'default':
-                xslt_script = lbp_print.select_xlst_script(transcription)
-            else:
-                xslt_script = upload_file(form.xslt_upload.data)
-
-            tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script)
-
-            # if form.pdf_tex.data == 'tex':
-            #     return send_file(tex_file.name)
-            #
-            # pdf_file = lbp_print.compile_tex(tex_file)
-            #
-            # return send_file(pdf_file.name)
-
-            queue.put(None)
-
-
-        def stream(transcription):
-            listener_formatter = logging.Formatter(
-                '%(asctime)s %(processName)-10s %(name)s %(levelname)-8s %(message)s')
-
-            queue = multiprocessing.Queue(0)
-            process_worker = multiprocessing.Process(target=process_function, args=(queue, transcription))
-            process_worker.start()
-            while True:
-                try:
-                    record = queue.get()
-                    if record is None:
-                        break
-                    yield listener_formatter.format(record)
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    import sys, traceback
-                    print('Whoops! Problem:', sys.stderr)
-                    traceback.print_exc(file=sys.stderr)
-
-
-        if form.xml_upload_remote.data == 'upload':
-            transcription = lbp_print.LocalTranscription(upload_file(form.xml_upload.data))
-        else:
-            transcription = lbp_print.RemoteTranscription(form.scta_id.data)
-        rows = stream(transcription)
-        return Response(stream_template('test.html', rows=rows))
-
-
     return render_template('index_form.html', form=form)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
+#
+# if __name__ == "__main__":
+#     app.run(debug=True)
