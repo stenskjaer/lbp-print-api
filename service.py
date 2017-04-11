@@ -103,12 +103,6 @@ def process_file(form):
     # When the stream process is successful, it returns the filename of the tex or pdf file.
     filename = stream_processing(form)
 
-    emit('server_form_response', {'content': 'Conversion done!'})
-
-    if form['tex_or_pdf'] == 'tex':
-        file_ext = '.tex'
-    else:
-        file_ext = '.pdf'
     emit('redirect', {'url': filename})
 
 
@@ -151,7 +145,6 @@ def process_function(queue, form):
             logging.info('Uploaded file received.')
             xml_path = os.path.join(app.config['UPLOAD_FOLDER'], form['xml_file'])
             transcription = lbp_print.LocalTranscription(xml_path)
-
         else:
             logging.info('Looking for remote resource.')
             transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
