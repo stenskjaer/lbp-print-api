@@ -114,7 +114,7 @@ def process_file(form):
 
 def stream_processing(form):
     listener_formatter = logging.Formatter(
-        '%(asctime)s %(processName)-10s %(name)s %(levelname)-8s %(message)s')
+        '%(asctime)s %(message)s')
 
     queue = multiprocessing.Queue(0)
     process_worker = multiprocessing.Process(target=process_function, args=(queue, form))
