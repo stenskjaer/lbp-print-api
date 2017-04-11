@@ -22,12 +22,12 @@ app.config.update(dict(
 ))
 socketio = SocketIO(app)
 
-# root = logging.getLogger()
-# ch = logging.StreamHandler()
-# ch.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
-# ch.setFormatter(formatter)
-# root.addHandler(ch)
+root = logging.getLogger()
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+ch.setFormatter(formatter)
+root.addHandler(ch)
 
 
 # TODO: Wrap up the upload functionality.
