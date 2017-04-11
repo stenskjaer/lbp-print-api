@@ -109,17 +109,16 @@ def process_file(form):
     # TODO: We really need some form validation action before moving on with the processing.
 
     # Start the processing
-    stream_processing(form)
+    # When the stream process is successful, it returns the filename of the tex or pdf file.
+    filename = stream_processing(form)
 
     emit('server_form_response', {'content': 'Conversion done!'})
-
-    output_basename, _ = os.path.splitext(form['xml_file'])
 
     if form['tex_or_pdf'] == 'tex':
         file_ext = '.tex'
     else:
         file_ext = '.pdf'
-    emit('redirect', {'url': os.path.join('static', 'output', output_basename + file_ext)})
+    emit('redirect', {'url': filename})
 
 
 def stream_processing(form):
@@ -132,11 +131,17 @@ def stream_processing(form):
     while True:
         try:
             record = queue.get()
-            if record is None:
-                break
-            elif isinstance(record, Exception):
+            if isinstance(record, Exception):
+                # We have caught an exception that we raise and return.
                 raise record
-            emit('server_form_response', {'content': listener_formatter.format(record)})
+            elif isinstance(record, str):
+                # We have finished successfully and received the filename as final item in queue.
+                # We should now return that to the handler.
+                break
+            elif isinstance(record, logging.LogRecord):
+                emit('server_form_response', {'content': listener_formatter.format(record)})
+            else:
+                raise TypeError('Unexpected queue object type.')
             socketio.sleep(0.001)
         except:
             raise
@@ -168,11 +173,11 @@ def process_function(queue, form):
 
     if form['tex_or_pdf'] == 'tex':
         logging.info('Send tex file.')
+        return queue.put(tex_file.name)
     else:
         logging.info('Compile tex file.')
         pdf_file = lbp_print.compile_tex(tex_file)
-
-    return queue.put(None)
+        return queue.put(pdf_file.name)
 
 
 @app.route('/')
