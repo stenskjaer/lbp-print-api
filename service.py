@@ -153,7 +153,7 @@ def process_function(queue, form):
         except Exception as e:
             return queue.put(e)
     else:
-        transcription = lbp_print.RemoteTranscription(form['scta_id'])
+        transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
 
     if form['xslt_default_or_remote'] == 'default':
         xslt_script = lbp_print.select_xlst_script(transcription)
