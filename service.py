@@ -145,31 +145,35 @@ def process_function(queue, form):
     root.addHandler(h)
     root.setLevel(logging.DEBUG)
 
-    logging.info('Starting conversion...')
-    if form['xml_upload_or_remote'] == 'upload':
-        try:
+    logging.info('Starting conversion process...')
+    try:
+        if form['xml_upload_or_remote'] == 'upload':
+            logging.info('Uploaded file received.')
             xml_path = os.path.join(app.config['UPLOAD_FOLDER'], form['xml_file'])
             transcription = lbp_print.LocalTranscription(xml_path)
-        except Exception as e:
-            return queue.put(e)
-    else:
-        transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
 
-    if form['xslt_default_or_remote'] == 'default':
-        xslt_script = lbp_print.select_xlst_script(transcription)
-    else:
-        xslt_script = upload_file(form['xslt_file'])
+        else:
+            logging.info('Looking for remote resource.')
+            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
 
-    tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output')
-    tex_file = lbp_print.clean_tex(tex_file)
+        if form['xslt_default_or_remote'] == 'default':
+            logging.info('Using default XSLT conversion script.')
+            xslt_script = lbp_print.select_xlst_script(transcription)
+        else:
+            logging.info('Using uploaded XSLT conversion script.')
+            xslt_script = upload_file(form['xslt_file'])
 
-    if form['tex_or_pdf'] == 'tex':
-        logging.info('Send tex file.')
-        return queue.put(tex_file.name)
-    else:
-        logging.info('Compile tex file.')
-        pdf_file = lbp_print.compile_tex(tex_file)
-        return queue.put(pdf_file.name)
+        tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output')
+        tex_file = lbp_print.clean_tex(tex_file)
+
+        if form['tex_or_pdf'] == 'tex':
+            logging.info('Sending tex file.')
+            return queue.put(tex_file.name)
+        else:
+            pdf_file = lbp_print.compile_tex(tex_file)
+            return queue.put(pdf_file.name)
+    except Exception as e:
+        return queue.put(e)
 
 
 @app.route('/')
