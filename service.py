@@ -2,15 +2,15 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 
 from werkzeug.utils import secure_filename
-import lbp_print
 import os
 import json
 import multiprocessing
+import logging
+import logging.handlers
+import lbp_print
 
 from forms import TranscriptionForm
 from upload_file import UploadFile
-
-
 
 app = Flask(__name__, instance_path=os.getcwd())
 app.config.from_object(__name__)  # load config from this file
@@ -22,10 +22,6 @@ app.config.update(dict(
 ))
 socketio = SocketIO(app)
 
-
-import logging
-import logging.handlers
-#
 # root = logging.getLogger()
 # ch = logging.StreamHandler()
 # ch.setLevel(logging.DEBUG)
