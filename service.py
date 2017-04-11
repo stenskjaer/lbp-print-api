@@ -97,15 +97,6 @@ def upload():
 
 @socketio.on('submit_form')
 def process_file(form):
-    # This is only for debugging.
-    emit('server_form_response', {
-        'xml_upload_or_remote': form['xml_upload_or_remote'],
-        'xml_file': form['xml_file'],
-        'scta_id': form['scta_id'],
-        'xslt_default_or_remote': form['xslt_default_or_remote'],
-        'xslt_file': form['xslt_file'],
-        'tex_or_pdf': form['tex_or_pdf'],
-        })
     # TODO: We really need some form validation action before moving on with the processing.
 
     # Start the processing

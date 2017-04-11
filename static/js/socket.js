@@ -7,14 +7,6 @@ $(function () {
         if (first_form_response) {
             $('#form_section').addClass('stream');
             $('#form_section').empty();
-            $('#form_section').append($('<div/>').text(
-                'Upload: ' + msg.xml_upload_or_remote
-                + '; XML File: ' + msg.xml_file
-                + '; SCTA ID: ' + msg.scta_id
-                + '; XSLT upload/remote: ' + msg.xslt_upload_or_remote
-                + '; XSLT file: ' + msg.xslt_file
-                + '; Tex of PDF: ' + msg.tex_or_pdf
-            ).html());
             first_form_response = false;
         }
         message_lines = msg.content.split(/\n/g);
