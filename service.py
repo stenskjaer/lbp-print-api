@@ -143,7 +143,7 @@ def process_function(queue, form):
             transcription = lbp_print.LocalTranscription(xml_path)
         else:
             logging.info('Looking for remote resource.')
-            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
+            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')<
 
         if form['xslt_default_or_remote'] == 'default':
             logging.info('Using default XSLT conversion script.')
@@ -159,7 +159,7 @@ def process_function(queue, form):
             logging.info('Sending tex file.')
             return queue.put(tex_file.name)
         else:
-            pdf_file = lbp_print.compile_tex(tex_file)
+            pdf_file = lbp_print.compile_tex(tex_file, output_dir='static/output')
             return queue.put(pdf_file.name)
     except Exception as e:
         return queue.put(e)
