@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
+from logging import handlers
 
 from werkzeug.utils import secure_filename
 import os
@@ -23,11 +24,15 @@ app.config.update(dict(
 socketio = SocketIO(app)
 
 root = logging.getLogger()
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('[%(asctime)s] %(name)s %(levelname)s: %(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.WARN)
+file_handler = handlers.RotatingFileHandler('logs/service.log', maxBytes=1024*1000, backupCount=5)
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+root.addHandler(stream_handler)
+root.addHandler(file_handler)
 
 
 # TODO: Wrap up the upload functionality.

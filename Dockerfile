@@ -33,7 +33,7 @@ RUN python3.6 -m pip install --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
 
 # Create necessary dirs that are excluded via .gitignore
-RUN mkdir -p /upload && mkdir -p /static/output
+RUN mkdir -p /upload /static/output /logs
 
 EXPOSE 5000
 
