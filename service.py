@@ -143,7 +143,7 @@ def process_function(queue, form):
             transcription = lbp_print.LocalTranscription(xml_path)
         else:
             logging.info('Looking for remote resource.')
-            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')<
+            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
 
         if form['xslt_default_or_remote'] == 'default':
             logging.info('Using default XSLT conversion script.')
