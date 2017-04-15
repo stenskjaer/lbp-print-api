@@ -26,14 +26,14 @@ RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
+# Create necessary dirs that are excluded via .gitignore
+RUN mkdir upload static static/output logs
+
 # Copy in the app content
 COPY requirements.txt /usr/src/app/
 RUN python3.6 -m pip install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app
-
-# Create necessary dirs that are excluded via .gitignore
-RUN mkdir -p /upload /static/output /logs
 
 EXPOSE 5000
 
