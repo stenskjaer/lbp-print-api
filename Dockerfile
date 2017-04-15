@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y wget curl git
 # should we add --no-install-recommends?
 
 # texlive install
-RUN apt-get install -y xzdec texlive-xetex latexmk
+RUN apt-get install -y xzdec texlive-full latexmk
 
 # texlive update and install packages
 RUN tlmgr init-usertree
