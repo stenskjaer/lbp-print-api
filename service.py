@@ -157,7 +157,8 @@ def process_function(queue, form):
             logging.info('Using uploaded XSLT conversion script.')
             xslt_script = upload_file(os.path.join(app.config['UPLOAD_FOLDER'], form['xslt_file']))
 
-        tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output')
+        tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output',
+                                                xslt_parameters='standalone-document=yes')
         tex_file = lbp_print.clean_tex(tex_file)
 
         if form['tex_or_pdf'] == 'tex':
