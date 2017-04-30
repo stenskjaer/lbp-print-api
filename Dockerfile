@@ -37,6 +37,6 @@ COPY . /usr/src/app
 
 COPY texmf/ /root/texmf
 
-EXPOSE 5000
+EXPOSE 80
 
-CMD gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5000 service:app
+CMD gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:80 service:app
