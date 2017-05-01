@@ -65,17 +65,19 @@ test it with `gunicorn` (equivalent to the Dockerized server), run:
 gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5000 service:app
 ```
 
-If you want to build the Docker images, run :
+# Docker image
+
+If you want to build the Docker image, run (from the project directory):
 ```
 docker build -t lbp-print .
 ```
 
-In development and testing, run with debugging: 
+Now, to run: 
 ```
-docker run -p 5000:5000 lbp-print
+docker run -p 80:80 lbp-print
 ```
 
-Now the app should be available on [localhost:5000](http://localhost:5000).
+The app should be available on [localhost](http://localhost).
 
 # Contribute
 
