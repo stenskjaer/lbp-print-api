@@ -8,7 +8,7 @@ import json
 import multiprocessing
 import logging
 import logging.handlers
-import lbp_print
+import lbp_print.core as lbp_print
 
 from forms import TranscriptionForm
 from upload_file import UploadFile
