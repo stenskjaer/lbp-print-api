@@ -13,8 +13,16 @@ $(function () {
         $.each(message_lines, function(index, value) {
             // If we get more than one line in a log output, subsequent lines will be indented.
             if (index < 1) {
-                $('#form_section').append(value + '<br>');
-            } else {
+                if (value.indexOf("ERROR") >= 0) {
+                   // We have an error, so stop the cursor from spinning to indicate halted process.
+                    $('#form_section').append(value + '<br>');
+                    $('#form_section').append(
+                        '<h4><a onclick="location.reload();">Return to form</a></h4>');
+                    $("body").css("cursor", "default");
+                } else {
+                    $('#form_section').append(value + '<br>');
+                }
+            } else if (index >= 1) {
                 $('#form_section').append('<span class="console-indent">' + value + '</span><br>');
             }
             $('#form_section').scrollTop($('#form_section')[0].scrollHeight);
@@ -35,10 +43,12 @@ $(function () {
             xslt_file: $('#xslt_upload_list').find('p').text(),
             tex_or_pdf: $('input[type=radio][name=pdf_tex]:checked').val(),
         });
+        $("body").css("cursor", "wait");
         return false;
     });
 
     socket.on('redirect', function (data) {
+        $("body").css("cursor", "default");
         window.location = data.url;
     });
 
