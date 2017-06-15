@@ -10,7 +10,7 @@ gunicorn==19.7.1
 isodate==0.5.4
 itsdangerous==0.24
 Jinja2==2.9.5
--e git+https://github.com/stenskjaer/lbp_print.git@9ba738024ecb8dd26d84eea107f333ed045962a4#egg=lbp_print
+-e git+https://github.com/stenskjaer/lbp_print.git@b2e2c587625f20e4ef6eb2731dde2cdd713bf0be#egg=lbp_print
 -e git+https://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy
 lxml==3.7.3
 MarkupSafe==1.0
