@@ -41,14 +41,14 @@ $(function () {
             scta_id: $('#scta_id').val(),
             xslt_default_or_remote: $('input[type=radio][name=xslt_upload_default]:checked').val(),
             xslt_file: $('#xslt_upload_list').find('p').text(),
-            tex_or_pdf: $('input[type=radio][name=pdf_tex]:checked').val(),
+            tex_or_pdf: $('input[type=radio][name=pdf_tex]:checked').val()
         });
-        $("body").css("cursor", "wait");
+        var target = document.getElementById('form_section');
+        var spinner = new Spinner().spin(target);
         return false;
     });
 
     socket.on('redirect', function (data) {
-        $("body").css("cursor", "default");
         window.location = data.url;
     });
 
