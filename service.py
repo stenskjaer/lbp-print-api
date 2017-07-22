@@ -171,6 +171,39 @@ def process_function(queue, form):
         return queue.put(e)
 
 
+@app.route('/compile')
+def service():
+    parameters = {
+        'scta_id': request.args.get('id'),
+        'tex_or_pdf': request.args.get('output', 'tex'),
+    }
+
+    from flask import jsonify, make_response
+
+    try:
+        logging.info('Looking for remote resource.')
+        transcription = lbp_print.RemoteTranscription(parameters['scta_id'], download_dir='upload')
+        logging.info('Using default XSLT conversion script.')
+        xslt_script = lbp_print.select_xlst_script(transcription)
+        tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script,
+                                                output='static/output',
+                                                xslt_parameters='standalone-document=yes')
+        tex_file = lbp_print.clean_tex(tex_file)
+
+        if parameters['tex_or_pdf'] == 'tex':
+            logging.info('Sending tex file.')
+            address = tex_file.name
+        else:
+            pdf_file = lbp_print.compile_tex(tex_file, output_dir='static/output')
+            address = pdf_file.name
+    except AttributeError:
+        error_message = "You gave the following parameters: %s. 'tex_or_pdf' must be either " \
+                        "'tex' or 'pdf' (default is 'tex'). 'scta_id' must be a valid SCTA id" \
+                        " (full url or id)." \
+                        % format(parameters)
+        return make_response(jsonify({'error': error_message}), 404)
+    return jsonify({'url': request.host + '/' + address})
+
 @app.route('/')
 def submit():
     form = TranscriptionForm()

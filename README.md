@@ -23,6 +23,27 @@ the app will use a default Lombard Press transformation script. The script used
 is based on which version of the LombardPress Schema that the transcription is
 based on.
 
+## RESTful interface
+
+On the url `/compile` you can also pass the id and output as url parameters. The
+url could then look like this:
+
+```
+<hostname>/compile?id=lectio1&output=tex
+```
+
+This will return a JSON response of either an error message or the url of the
+output file.
+
+Parameters:
+- `id`: A valid SCTA id. It can either be a full SCTA url
+  (`http://scta.info/resource/lectio1`) or just the id (`lectio1`).
+- `output`: Which format should be created? Possibilities are `tex` and `pdf`.
+
+When you have a running instance, try `curl -i
+http://127.0.0.1:5000/compile\?id\=http://scta.info/resource/lectio1` (or
+replace the hostname appropriately).
+
 ## Warning
 
 This is still a young app, so it may produce unexpected output. Anything may be
