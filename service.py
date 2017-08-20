@@ -9,6 +9,9 @@ import multiprocessing
 import logging
 import logging.handlers
 import lbp_print.core as lbp_print
+import lbp_print.config as lbp_config
+
+lbp_config.cache_dir = 'cache'
 
 from forms import TranscriptionForm
 from upload_file import UploadFile
@@ -125,7 +128,8 @@ def stream_processing(form):
                 # We should now return that to the handler.
                 break
             elif isinstance(record, logging.LogRecord):
-                emit('server_form_response', {'content': listener_formatter.format(record)})
+                if record.levelname in ['INFO', 'WARNING', 'ERROR']:
+                    emit('server_form_response', {'content': listener_formatter.format(record)})
             else:
                 raise TypeError('Unexpected queue object type.')
             socketio.sleep(0.001)
@@ -142,31 +146,29 @@ def process_function(queue, form):
 
     logging.info('Starting conversion process...')
     try:
-        if form['xml_upload_or_remote'] == 'upload':
-            logging.info('Uploaded file received.')
-            xml_path = os.path.join(app.config['UPLOAD_FOLDER'], form['xml_file'])
-            transcription = lbp_print.LocalTranscription(xml_path)
-        else:
-            logging.info('Looking for remote resource.')
-            transcription = lbp_print.RemoteTranscription(form['scta_id'], download_dir='upload')
-
+        xslt_script = None
         if form['xslt_default_or_remote'] == 'default':
             logging.info('Using default XSLT conversion script.')
-            xslt_script = lbp_print.select_xlst_script(transcription)
         else:
             logging.info('Using uploaded XSLT conversion script.')
             xslt_script = upload_file(os.path.join(app.config['UPLOAD_FOLDER'], form['xslt_file']))
 
-        tex_file = lbp_print.convert_xml_to_tex(transcription.file.name, xslt_script, output='static/output',
-                                                xslt_parameters='standalone-document=yes')
-        tex_file = lbp_print.clean_tex(tex_file)
+        if form['xml_upload_or_remote'] == 'upload':
+            logging.info('Uploaded file received.')
+            xml_path = os.path.join(app.config['UPLOAD_FOLDER'], form['xml_file'])
+            trans = lbp_print.LocalTranscription(xml_path, custom_xslt=xslt_script)
+        else:
+            logging.info('Looking for remote resource.')
+            trans = lbp_print.RemoteTranscription(form['scta_id'], custom_xslt=xslt_script)
 
         if form['tex_or_pdf'] == 'tex':
-            logging.info('Sending tex file.')
-            return queue.put(tex_file.name)
+            format = 'tex'
         else:
-            pdf_file = lbp_print.compile_tex(tex_file, output_dir='static/output')
-            return queue.put(pdf_file.name)
+            format = 'pdf'
+
+        return queue.put(lbp_print.Tex(trans, output_format=format,
+                                       output_dir='static/output').process())
+
     except Exception as e:
         return queue.put(e)
 
@@ -211,4 +213,4 @@ def submit():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False)
+    socketio.run(app, debug=True)

@@ -27,7 +27,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Create necessary dirs that are excluded via .gitignore
-RUN mkdir upload static static/output logs
+RUN mkdir upload static static/output logs cache
 
 # Copy in the app content
 COPY requirements.txt /usr/src/app/

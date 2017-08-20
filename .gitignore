@@ -1,6 +1,7 @@
 ### Custom material from the directory ###
 */output/
 /upload/
+/cache/
 
 # Log bin
 /logs/
