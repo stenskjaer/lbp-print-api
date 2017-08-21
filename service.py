@@ -151,7 +151,7 @@ def process_function(queue, form):
             logging.info('Using default XSLT conversion script.')
         else:
             logging.info('Using uploaded XSLT conversion script.')
-            xslt_script = upload_file(os.path.join(app.config['UPLOAD_FOLDER'], form['xslt_file']))
+            xslt_script = os.path.join(app.config['UPLOAD_FOLDER'], form['xslt_file'])
 
         if form['xml_upload_or_remote'] == 'upload':
             logging.info('Uploaded file received.')
