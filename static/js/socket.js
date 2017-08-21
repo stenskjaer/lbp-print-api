@@ -37,7 +37,7 @@ $(function () {
     $('form#transcription_form').submit(function (event) {
         socket.emit('submit_form', {
             xml_upload_or_remote: $('input[type=radio][name=xml_upload_remote]:checked').val(),
-            xml_file: $('#xml_upload_list').find('p').text(),
+            xml_file: $('#xml_upload_list').find('#filename').text(),
             scta_id: $('#scta_id').val(),
             xslt_default_or_remote: $('input[type=radio][name=xslt_upload_default]:checked').val(),
             xslt_file: $('#xslt_upload_list').find('p').text(),
@@ -56,7 +56,11 @@ $(function () {
         dataType: 'json',
         done: function (e, data) {
             $.each(data.result.files, function (index, file) {
-                $('<p/>').text(file.name).appendTo('#xml_upload_list');
+                var result =  $(
+                    '<p class="text-success"> ✓ Uploaded: ' +
+                    '<span id="filename">' + file.name + '</span></p>'
+                );
+                result.appendTo('#xml_upload_list');
             });
         }
     });
@@ -65,7 +69,11 @@ $(function () {
         dataType: 'json',
         done: function (e, data) {
             $.each(data.result.files, function (index, file) {
-                $('<p/>').text(file.name).appendTo('#xslt_upload_list');
+                var result =  $(
+                    '<p class="text-success"> ✓ Uploaded: ' +
+                    '<span id="filename">' + file.name + '</span></p>'
+                );
+                result.appendTo('#xslt_upload_list');
             });
         }
     });
