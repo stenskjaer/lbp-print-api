@@ -1,20 +1,26 @@
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit
+
+
+import json
+import logging
+import multiprocessing
+import os
+import subprocess
+
 from logging import handlers
 
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
-import os
-import json
-import multiprocessing
-import logging
-import logging.handlers
+
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
-
 lbp_config.cache_dir = 'cache'
 
 from forms import TranscriptionForm
 from upload_file import UploadFile
+
+# App version
+__VERSION__ = subprocess.check_output('git describe --tags', shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 app.config.from_object(__name__)  # load config from this file
@@ -206,7 +212,7 @@ def service():
 @app.route('/')
 def submit():
     form = TranscriptionForm()
-    return render_template('index_form.html', form=form)
+    return render_template('index_form.html', form=form, version=__VERSION__)
 
 
 if __name__ == '__main__':
