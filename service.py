@@ -7,6 +7,8 @@ import subprocess
 from logging import handlers
 
 from flask import Flask, render_template, request
+from flask import jsonify, make_response
+
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 
@@ -177,6 +179,11 @@ def process_function(queue, form):
         return queue.put(e)
 
 
+@app.route('/run/<id>')
+def run(id):
+    return jsonify({'id': id})
+
+
 @app.route('/compile')
 def service():
     parameters = {
@@ -184,7 +191,6 @@ def service():
         'tex_or_pdf': request.args.get('output', 'tex'),
     }
 
-    from flask import jsonify, make_response
 
     try:
 
