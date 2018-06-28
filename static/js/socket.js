@@ -37,10 +37,10 @@ $(function () {
     $('form#transcription_form').submit(function (event) {
         socket.emit('submit_form', {
             xml_upload_or_remote: $('input[type=radio][name=xml_upload_remote]:checked').val(),
-            xml_file: $('#xml_upload_list').find('#filename').text(),
+            xml_file: $('#xml_upload_list').find('#xml_filename').text(),
             scta_id: $('#scta_id').val(),
             xslt_default_or_remote: $('input[type=radio][name=xslt_upload_default]:checked').val(),
-            xslt_file: $('#xslt_upload_list').find('p').text(),
+            xslt_file: $('#xslt_upload_list').find('#xslt_file').text(),
             tex_or_pdf: $('input[type=radio][name=pdf_tex]:checked').val()
         });
         var target = document.getElementById('form_section');
@@ -58,7 +58,7 @@ $(function () {
             $.each(data.result.files, function (index, file) {
                 var result =  $(
                     '<p class="text-success"> ✓ Uploaded: ' +
-                    '<span id="filename">' + file.name + '</span></p>'
+                    '<span id="xml_filename">' + file.name + '</span></p>'
                 );
                 result.appendTo('#xml_upload_list');
             });
@@ -71,7 +71,7 @@ $(function () {
             $.each(data.result.files, function (index, file) {
                 var result =  $(
                     '<p class="text-success"> ✓ Uploaded: ' +
-                    '<span id="filename">' + file.name + '</span></p>'
+                    '<span id="xslt_file">' + file.name + '</span></p>'
                 );
                 result.appendTo('#xslt_upload_list');
             });

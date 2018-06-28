@@ -25,7 +25,7 @@ class TranscriptionForm(FlaskForm):
                                                  '/sententia</a> lists all Sentence commentaries, and from there the '
                                                  'resource ids of each the relevant work items.')
     xml_upload = FileField('XML Upload',
-                           description='The uploaded file must be valid XML and in comliance with the LombardPress '
+                           description='The uploaded file must be valid XML and in compliance with the LombardPress '
                                        'Schema.')
     xslt_upload = FileField('XSLT Upload')
 
