@@ -1,7 +1,8 @@
-FROM ubuntu:16.10
+FROM ubuntu:18.10
 
 # set environment encoding and some base utils
 ENV LANG C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y wget curl git
 
 # should we add --no-install-recommends?
@@ -9,18 +10,24 @@ RUN apt-get update && apt-get install -y wget curl git
 # texlive install
 RUN apt-get install -y xzdec texlive-full latexmk
 
-# texlive update and install packages
+# texlive update and install reledmac
 RUN tlmgr init-usertree
 RUN tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet
 RUN tlmgr update --self
-RUN tlmgr install reledmac libertine
+RUN tlmgr install reledmac
+
+# Manual install libertine
+RUN wget http://mirrors.ctan.org/install/fonts/libertine.tds.zip
+WORKDIR /texmf
+RUN unzip /libertine.tds.zip
+RUN texhash
+RUN updmap --user --enable Map=libertine.map
 
 # Java
 RUN apt-get install -y default-jre
 
 # Python and pip
-RUN apt-get install -y python3.6
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN apt-get install -y python3.6 python3-pip
 
 # App directory and install
 RUN mkdir -p /usr/src/app
