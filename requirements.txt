@@ -11,7 +11,7 @@ isodate==0.5.4
 itsdangerous==0.24
 Jinja2==2.9.5
 -e git+https://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy
--e git+https://github.com/stenskjaer/lbp_print.git@3908f0a213414e67415e9a53c4982723cc986cbd#egg=lbp_print
+-e git+https://github.com/stenskjaer/lbp_print.git@f8fc3d19d7778faaa3c7a3463117dfb4a39b16f0#egg=lbp_print
 lxml==3.7.3
 MarkupSafe==1.0
 pyparsing==2.2.0
