@@ -21,3 +21,6 @@ __pycache__
 
 ### macOS
 .DS_Store
+
+# Mypy
+.mypy_cache/
