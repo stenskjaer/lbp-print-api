@@ -48,15 +48,16 @@ def service():
     response = {
         "pdf": {"status": "not started"},
         "tex": {"status": "not started"},
+        "progress": ""
     }
 
     try:
         job = Job.fetch(resource_id, connection=Redis())
+        response["progress"] = job.meta["progress"]
         
         if job.result:
             response["tex"] = {"status": "finished", "url": job.result}
-        else:
-            job = start_job(resource_id)    
+        else:  
             response["tex"] = {"status": "working"}
     except NoSuchJobError:
         job = start_job(resource_id)
