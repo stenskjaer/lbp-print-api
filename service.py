@@ -35,33 +35,39 @@ logger.addHandler(file_handler)
 
 q = Queue(connection=Redis())
 
+
 def start_job(resource_id):
     return q.enqueue(
-        convert_resource, resource_id, 
-        job_id=resource_id, job_timeout="1h", result_ttl=30
+        convert_resource,
+        resource_id,
+        job_id=resource_id,
+        job_timeout="1h",
+        result_ttl=30,
     )
+
 
 @app.route("/api/v1/resource")
 def service():
     resource_id = request.args.get("id")
 
-    response = {
-        "pdf": {"status": "not started"},
-        "tex": {"status": "not started"},
-        "progress": ""
-    }
+    response = {"status": "failed", "progress": ""}
 
     try:
         job = Job.fetch(resource_id, connection=Redis())
         response["progress"] = job.meta["progress"]
-        
+
         if job.result:
-            response["tex"] = {"status": "finished", "url": job.result}
-        else:  
-            response["tex"] = {"status": "working"}
+            response = {"status": "finished", "url": job.result}
+        if job.is_failed:
+            response["status"] = "failed"
+            job.cancel()
+            job.cleanup()
+            job = start_job(resource_id)
+        else:
+            response["status"] = "working"
     except NoSuchJobError:
         job = start_job(resource_id)
-        response["tex"] = {"status": "started"}    
+        response["status"] = "started"
 
     return jsonify(response)
 
