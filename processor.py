@@ -5,6 +5,7 @@ from rq import get_current_job
 
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
+from lbp_print.exceptions import SaxonError
 
 lbp_config.cache_dir = "cache"
 
@@ -45,7 +46,8 @@ def convert_resource(id: str, resource_type: str) -> str:
     update_status(f"Converting resource to pdf.", job)
     try:
         filename = lbp_print.Tex(trans).process(output_format="pdf")
-    except:
+    except SaxonError as exc:
+        update_status(str(exc), job)
         raise
 
     update_status(f"Successfully converted resource {id} to pdf.", job)
