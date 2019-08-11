@@ -55,24 +55,22 @@ def service():
         }
         return jsonify(error_message)
 
-    response = {"status": "failed", "progress": ""}
-
     try:
         job = Job.fetch(resource_id, connection=Redis())
-        response["progress"] = job.meta["progress"]
 
         if job.result:
-            response = {"status": "finished", "url": job.result}
-        if job.is_failed:
-            response["status"] = "failed"
-            job.cancel()
-            job.cleanup()
-            job = start_job(resource_id)
+            response = {"Status": "Finished", "url": job.result}
+        elif job.is_failed:
+            response = {
+                "Status": "Failed. Resubmit to retry.",
+                "error": job.meta["progress"],
+            }
+            job.delete()
         else:
-            response["status"] = "working"
+            response = {"Status": "Working"}
     except NoSuchJobError:
         job = start_job(resource_id)
-        response["status"] = "started"
+        response = {"Status": "Started"}
 
     return jsonify(response)
 
