@@ -47,8 +47,28 @@ def start_job(resource_value: str, resource_type: str):
     )
 
 
+def handle_job(resource_id: str, resource_type: str) -> dict:
+    try:
+        job = Job.fetch(resource_id, connection=Redis())
+    except NoSuchJobError:
+        job = start_job(resource_id, resource_type)
+        return {"Status": "Started"}
+
+    if job.result:
+        response = {"Status": "Finished", "url": job.result}
+    elif job.is_failed:
+        response = {
+            "Status": "Failed. Resubmit to retry.",
+            "error": job.meta["progress"],
+        }
+        job.delete()
+    else:
+        response = {"Status": "Working"}
+    return response
+
+
 @app.route("/api/v1/resource")
-def service():
+def process_resource():
     resource_id = request.args.get("id")
     resource_type = "scta"
     if not resource_id:
@@ -57,22 +77,7 @@ def service():
         }
         return jsonify(error_message)
 
-    try:
-        job = Job.fetch(resource_id, connection=Redis())
-
-        if job.result:
-            response = {"Status": "Finished", "url": job.result}
-        elif job.is_failed:
-            response = {
-                "Status": "Failed. Resubmit to retry.",
-                "error": job.meta["progress"],
-            }
-            job.delete()
-        else:
-            response = {"Status": "Working"}
-    except NoSuchJobError:
-        job = start_job(resource_id, resource_type=resource_type)
-        response = {"Status": "Started"}
+    response = handle_job(resource_id, resource_type)
 
     return jsonify(response)
 
