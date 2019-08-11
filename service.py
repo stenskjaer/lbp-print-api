@@ -70,14 +70,26 @@ def handle_job(resource_id: str, resource_type: str) -> dict:
 @app.route("/api/v1/resource")
 def process_resource():
     resource_id = request.args.get("id")
-    resource_type = "scta"
-    if not resource_id:
+    resource_url = request.args.get("url")
+    if not resource_id and not resource_url:
         error_message = {
-            "error": "The parameter 'id' is requied. It must container an SCTA resource id, e.g. scta.info/resource/lectio1"
+            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file, e.g. https://raw.githubusercontent.com/scta-texts/da-49/master/da-49-l1q1/da-49-l1q1.xml"
+        }
+        return jsonify(error_message)
+    elif resource_id and resource_url:
+        error_message = {
+            "error": "One of the parameters 'id' and 'url' must be given, but not both."
         }
         return jsonify(error_message)
 
-    response = handle_job(resource_id, resource_type)
+    if resource_id:
+        resource_value = resource_id
+        resource_type = "scta"
+    else:
+        resource_value = resource_url
+        resource_type = "url"
+
+    response = handle_job(resource_value, resource_type)
 
     return jsonify(response)
 
