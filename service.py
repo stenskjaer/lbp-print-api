@@ -36,11 +36,12 @@ logger.addHandler(file_handler)
 q = Queue(connection=Redis())
 
 
-def start_job(resource_id):
+def start_job(resource_value: str, resource_type: str):
     return q.enqueue(
         convert_resource,
-        resource_id,
-        job_id=resource_id,
+        resource_value,
+        resource_type,
+        job_id=resource_value,
         job_timeout="1h",
         result_ttl=30,
     )
@@ -49,6 +50,7 @@ def start_job(resource_id):
 @app.route("/api/v1/resource")
 def service():
     resource_id = request.args.get("id")
+    resource_type = "scta"
     if not resource_id:
         error_message = {
             "error": "The parameter 'id' is requied. It must container an SCTA resource id, e.g. scta.info/resource/lectio1"
@@ -69,7 +71,7 @@ def service():
         else:
             response = {"Status": "Working"}
     except NoSuchJobError:
-        job = start_job(resource_id)
+        job = start_job(resource_id, resource_type=resource_type)
         response = {"Status": "Started"}
 
     return jsonify(response)

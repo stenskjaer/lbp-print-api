@@ -28,11 +28,18 @@ def update_status(message, job):
     logger.info(message)
 
 
-def convert_resource(id: str) -> str:
+def convert_resource(id: str, resource_type: str) -> str:
     job = get_current_job()
-    update_status(f"Processing remote resource {id}.", job)
+    update_status(f"Start processing {id}.", job)
 
-    trans = lbp_print.RemoteTranscription(id)
+    if resource_type == "scta":
+        trans = lbp_print.RemoteResource(id)
+    elif resource_type == "url":
+        trans = lbp_print.UrlResource(id)
+    else:
+        raise ValueError(
+            f"Trying to convert resource {id} of illegal type {resource_type}"
+        )
     update_status(f"Identified and downloaded resource {id}.", job)
 
     update_status(f"Converting resource to pdf.", job)
