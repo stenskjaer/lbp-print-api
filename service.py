@@ -16,8 +16,7 @@ import lbp_print.config as lbp_config
 from processor import convert_resource
 
 # App version
-__VERSION__ = subprocess.check_output(
-    "git describe --tags", shell=True).decode()
+__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 
@@ -28,8 +27,7 @@ file_handler = handlers.RotatingFileHandler(
     "logs/service.log", maxBytes=1024 * 1000, backupCount=5
 )
 file_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 stream_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
