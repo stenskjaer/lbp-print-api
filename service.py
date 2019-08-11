@@ -36,22 +36,18 @@ logger.addHandler(file_handler)
 q = Queue(connection=Redis())
 
 
-def start_job(resource_value: str, resource_type: str):
-    return q.enqueue(
-        convert_resource,
-        resource_value,
-        resource_type,
-        job_id=resource_value,
-        job_timeout="1h",
-        result_ttl=30,
-    )
-
-
-def handle_job(resource_id: str, resource_type: str) -> dict:
+def handle_job(resource_value: str, resource_type: str) -> dict:
     try:
-        job = Job.fetch(resource_id, connection=Redis())
+        job = Job.fetch(resource_value, connection=Redis())
     except NoSuchJobError:
-        job = start_job(resource_id, resource_type)
+        job = q.enqueue(
+            convert_resource,
+            resource_value,
+            resource_type,
+            job_id=resource_value,
+            job_timeout="1h",
+            result_ttl=30,
+        )
         return {"Status": "Started"}
 
     if job.result:
