@@ -1,3 +1,5 @@
+import logging
+
 from redis import Redis
 from rq import get_current_job, Queue
 from rq.job import Job
@@ -7,11 +9,9 @@ import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 from lbp_print.exceptions import SaxonError
 
-from utils import setup_logger
+logger = logging.getLogger()
 
 lbp_config.cache_dir = "cache"
-
-logger = setup_logger("print_api")
 
 q = Queue(connection=Redis())
 

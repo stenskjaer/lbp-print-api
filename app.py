@@ -8,14 +8,11 @@ import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 
 from processor import handle_job
-from utils import setup_logger
 
 # App version
 __VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
-
-logger = setup_logger("print_api")
 
 
 @app.route("/api/v1/resource")
