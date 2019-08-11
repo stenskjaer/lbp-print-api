@@ -58,17 +58,15 @@ def convert_resource(id: str, resource_type: str) -> str:
     elif resource_type == "url":
         trans = lbp_print.UrlResource(id)
     else:
-        raise ValueError(
-            f"Trying to convert resource {id} of illegal type {resource_type}"
-        )
-    update_status(f"Identified and downloaded resource {id}.", job)
+        raise ValueError(f"Trying to convert {id} of illegal type {resource_type}")
+    update_status(f"Identified and downloaded {id}.", job)
 
-    update_status(f"Converting resource to pdf.", job)
+    update_status(f"Converting {id} to pdf.", job)
     try:
         filename = lbp_print.Tex(trans).process(output_format="pdf")
     except SaxonError as exc:
         update_status(str(exc), job)
         raise
+    update_status(f"Successfully converted {id} to pdf.", job)
 
-    update_status(f"Successfully converted resource {id} to pdf.", job)
     return filename
