@@ -1,26 +1,46 @@
-import logging
-from logging import handlers
-
-from rq import get_current_job
+from redis import Redis
+from rq import get_current_job, Queue
+from rq.job import Job
+from rq.exceptions import NoSuchJobError
 
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 from lbp_print.exceptions import SaxonError
 
+from utils import setup_logger
+
 lbp_config.cache_dir = "cache"
 
-logger = logging.getLogger()
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INFO)
-file_handler = handlers.RotatingFileHandler(
-    "logs/service.log", maxBytes=1024 * 1000, backupCount=5
-)
-file_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-stream_handler.setFormatter(formatter)
-file_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
-logger.addHandler(file_handler)
+logger = setup_logger("print_api")
+
+q = Queue(connection=Redis())
+
+
+def handle_job(resource_value: str, resource_type: str) -> dict:
+    try:
+        job = Job.fetch(resource_value, connection=Redis())
+    except NoSuchJobError:
+        job = q.enqueue(
+            convert_resource,
+            resource_value,
+            resource_type,
+            job_id=resource_value,
+            job_timeout="1h",
+            result_ttl=30,
+        )
+        return {"Status": f"Started processing {resource_value}"}
+
+    if job.result:
+        response = {"Status": "Finished", "url": job.result}
+    elif job.is_failed:
+        response = {
+            "Status": "Failed. Resubmit to retry.",
+            "error": job.meta["progress"],
+        }
+        job.delete()
+    else:
+        response = {"Status": job.meta["progress"]}
+    return response
 
 
 def update_status(message, job):
