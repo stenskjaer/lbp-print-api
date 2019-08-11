@@ -49,6 +49,11 @@ def start_job(resource_id):
 @app.route("/api/v1/resource")
 def service():
     resource_id = request.args.get("id")
+    if not resource_id:
+        error_message = {
+            "error": "The parameter 'id' is requied. It must container an SCTA resource id, e.g. scta.info/resource/lectio1"
+        }
+        return jsonify(error_message)
 
     response = {"status": "failed", "progress": ""}
 
