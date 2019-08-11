@@ -3,6 +3,9 @@
 /upload/
 /cache/
 
+# Redis db dump
+dump.rdb
+
 # Log bin
 /logs/
 *.log
