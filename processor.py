@@ -17,13 +17,15 @@ logger.error("Child his is an error")
 
 lbp_config.cache_dir = "cache"
 
-q = Queue(connection=Redis())
+redis_connection = Redis(host="redis")
+
+q = Queue(connection=redis_connection)
 
 
 def handle_job(resource_value: str, resource_type: str) -> dict:
     try:
         logger.debug(f"Checking for job with the id {resource_value}")
-        job = Job.fetch(resource_value, connection=Redis())
+        job = Job.fetch(resource_value, connection=redis_connection)
     except NoSuchJobError:
         logger.debug(f"No existing job. Starting one up ...")
         job = q.enqueue(
