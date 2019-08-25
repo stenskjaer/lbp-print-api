@@ -1,3 +1,22 @@
+# LBP Print Api
+
+## Running locally
+
+Start the Flask app
+```
+python3 app.py
+```
+
+Start the redis server
+````
+redis-server
+```
+
+Start the redis worker
+```
+rq worker
+```
+
 # Web app for viewing Lombard Press compliant transcriptions in PDF
 
 One of the many advantages of encoding transcriptions or editions in a semantic
