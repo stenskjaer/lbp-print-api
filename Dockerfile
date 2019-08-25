@@ -1,4 +1,4 @@
-FROM ubuntu:18.10
+FROM ubuntu:19.04
 
 # set environment encoding and some base utils
 ENV LANG C.UTF-8
