@@ -1,22 +1,51 @@
+import logging
 import json
 import os
 import subprocess
 
+from logging.config import dictConfig
 from flask import Flask, request, jsonify
+from flask.logging import default_handler
 
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 
 from processor import handle_job
 
+dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            }
+        },
+        "handlers": {
+            "default": {
+                "level": "DEBUG",
+                "formatter": "default",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "test.log",
+                "maxBytes": 5000000,
+                "backupCount": 5,
+            }
+        },
+        "root": {"level": logging.DEBUG, "handlers": ["default"]},
+    }
+)
+
 # App version
 __VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 
+logger = logging.getLogger()
+logger.addHandler(default_handler)
+
 
 @app.route("/api/v1/resource")
 def process_resource():
+    logger.debug(f"Received request with args: {request.args}")
     resource_id = request.args.get("id")
     resource_url = request.args.get("url")
     if not resource_id and not resource_url:

@@ -9,7 +9,11 @@ import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 from lbp_print.exceptions import SaxonError
 
+
 logger = logging.getLogger()
+logger.warning("Child This is a warning")
+logger.error("Child his is an error")
+
 
 lbp_config.cache_dir = "cache"
 
@@ -18,8 +22,10 @@ q = Queue(connection=Redis())
 
 def handle_job(resource_value: str, resource_type: str) -> dict:
     try:
+        logger.debug(f"Checking for job with the id {resource_value}")
         job = Job.fetch(resource_value, connection=Redis())
     except NoSuchJobError:
+        logger.debug(f"No existing job. Starting one up ...")
         job = q.enqueue(
             convert_resource,
             resource_value,
@@ -30,16 +36,18 @@ def handle_job(resource_value: str, resource_type: str) -> dict:
         )
         return {"Status": f"Started processing {resource_value}"}
 
+    status = job.meta["progress"]
+
     if job.result:
         response = {"Status": "Finished", "url": job.result}
+        logger.debug(f"Job was finished. Result: " + job.result)
     elif job.is_failed:
-        response = {
-            "Status": "Failed. Resubmit to retry.",
-            "error": job.meta["progress"],
-        }
+        response = {"Status": "Failed. Resubmit to retry.", "error": status}
+        logger.warn(f"Job failed." + status)
         job.delete()
     else:
-        response = {"Status": job.meta["progress"]}
+        response = {"Status": status}
+        logger.debug(f"Job running. Status: " + status)
     return response
 
 
