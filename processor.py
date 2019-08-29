@@ -9,16 +9,9 @@ import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 from lbp_print.exceptions import SaxonError
 
-
 logger = logging.getLogger()
-logger.warning("Child This is a warning")
-logger.error("Child his is an error")
-
-
 lbp_config.cache_dir = "cache"
-
 redis_connection = Redis(host="redis")
-
 q = Queue(connection=redis_connection)
 
 

@@ -4,10 +4,13 @@ import sys
 from redis import Redis
 from rq import Connection, Worker
 
-# Provide queue names to listen to as arguments to this script,
-# similar to rq worker
-with Connection():
-    qs = sys.argv[1:] or ["default"]
 
-    w = Worker(qs, connection=Redis(host="redis"))
-    w.work()
+def start_worker(queues: list = ["default"]):
+    with Connection():
+        w = Worker(queues, connection=Redis(host="redis"))
+        w.work()
+
+
+if __name__ == "__main__":
+    qs = sys.argv[1:] or ["default"]
+    start_worker(qs)
