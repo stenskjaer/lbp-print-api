@@ -4,8 +4,9 @@ import os
 import subprocess
 
 from logging.config import dictConfig
-from flask import Flask, request, jsonify
+from flask import Flask, request, make_response, jsonify
 from flask.logging import default_handler
+from flask import send_from_directory
 
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
@@ -35,7 +36,7 @@ dictConfig(
 )
 
 # App version
-__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
+#__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 
@@ -50,7 +51,7 @@ def process_resource():
     resource_url = request.args.get("url")
     if not resource_id and not resource_url:
         error_message = {
-            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file, e.g. https://raw.githubusercontent.com/scta-texts/da-49/master/da-49-l1q1/da-49-l1q1.xml"
+            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file,$
         }
         return jsonify(error_message)
     elif resource_id and resource_url:
@@ -66,10 +67,17 @@ def process_resource():
         resource_value = resource_url
         resource_type = "url"
 
+    #response = handle_job(resource_value, resource_type)
+    #return jsonify(response)
+
     response = handle_job(resource_value, resource_type)
+    resp = make_response(jsonify(response),200)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
-    return jsonify(response)
-
+@app.route("/api/v1/cache/<hashwithextension>", methods=['GET'])
+def return_cache(hashwithextension):
+    return send_from_directory("cache", hashwithextension)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

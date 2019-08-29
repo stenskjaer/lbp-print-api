@@ -4,11 +4,14 @@ services:
     build: .
     ports:
     - 5000:5000
+    volumes:
+    - ../lbp-print-cache:/usr/src/app/cache
   queue-worker:
     build: .
     command: python3 worker.py
     depends_on:
     - redis
+    volumes:
+    - ../lbp-print-cache:/usr/src/app/cache
   redis:
     image: "redis:alpine"
-  
