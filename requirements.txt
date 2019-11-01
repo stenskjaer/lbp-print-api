@@ -21,5 +21,5 @@ rdflib==4.2.2
 six==1.10.0
 SPARQLWrapper==1.8.0
 untangle==1.1.0
-Werkzeug==0.12
+Werkzeug==0.15.3
 WTForms==2.1
