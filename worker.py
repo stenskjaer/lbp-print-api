@@ -7,7 +7,7 @@ from rq import Connection, Worker
 
 def start_worker(queues: list = ["default"]):
     with Connection():
-        w = Worker(queues, connection=Redis(host="redis"))
+        w = Worker(queues, connection=Redis(host="localhost"))
         w.work()
 
 

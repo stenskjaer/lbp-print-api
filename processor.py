@@ -11,39 +11,56 @@ from lbp_print.exceptions import SaxonError
 
 logger = logging.getLogger()
 lbp_config.cache_dir = "cache"
-redis_connection = Redis(host="redis")
+redis_connection = Redis(host="localhost")
 q = Queue(connection=redis_connection)
 
 
+
 def handle_job(resource_value: str, resource_type: str) -> dict:
-    try:
-        logger.debug(f"Checking for job with the id {resource_value}")
-        job = Job.fetch(resource_value, connection=redis_connection)
-    except NoSuchJobError:
-        logger.debug(f"No existing job. Starting one up ...")
-        job = q.enqueue(
-            convert_resource,
-            resource_value,
-            resource_type,
-            job_id=resource_value,
-            job_timeout="1h",
-            result_ttl=30,
-        )
-        return {"Status": f"Started processing {resource_value}"}
 
-    status = job.meta["progress"]
+    # if file existsfirst route
+    # request url, get hash
+    # get xstl, get hash
+    # get file name
+    # check if file exists
 
-    if job.result:
-        response = {"Status": "Finished", "url": job.result}
-        logger.debug(f"Job was finished. Result: " + job.result)
-    elif job.is_failed:
-        response = {"Status": "Failed. Resubmit to retry.", "error": status}
-        logger.warn(f"Job failed." + status)
-        job.delete()
+
+    fileExists = function()
+
+    if fileExists
+        response = {"Status": "Finished", "url": filename}
+        return response
+
+
     else:
-        response = {"Status": status}
-        logger.debug(f"Job running. Status: " + status)
-    return response
+        try:
+            logger.debug(f"Checking for job with the id {resource_value}")
+            job = Job.fetch(resource_value, connection=redis_connection)
+        except NoSuchJobError:
+            logger.debug(f"No existing job. Starting one up ...")
+            job = q.enqueue(
+                convert_resource,
+                resource_value,
+                resource_type,
+                job_id=resource_value,
+                job_timeout="1h",
+                result_ttl=30,
+            )
+            return {"Status": f"Started processing {resource_value}"}
+
+        status = job.meta["progress"]
+
+        if job.result:
+            response = {"Status": "Finished", "url": job.result}
+            logger.debug(f"Job was finished. Result: " + job.result)
+        elif job.is_failed:
+            response = {"Status": "Failed. Resubmit to retry.", "error": status}
+            logger.warn(f"Job failed." + status)
+            job.delete()
+        else:
+            response = {"Status": status}
+            logger.debug(f"Job running. Status: " + status)
+        return response
 
 
 def update_status(message, job):

@@ -35,7 +35,7 @@ dictConfig(
 )
 
 # App version
-__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
+#__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 
