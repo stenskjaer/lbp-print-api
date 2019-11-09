@@ -25,13 +25,11 @@ def handle_job(resource_value: str, resource_type: str) -> dict:
     # check if file exists
 
 
-    fileExists = function()
-
-    if fileExists
-        response = {"Status": "Finished", "url": filename}
+    # fileExists = function()
+    #
+    if 1 == 2:
+        response = {"Status": "Finished", "url": "test"}
         return response
-
-
     else:
         try:
             logger.debug(f"Checking for job with the id {resource_value}")
