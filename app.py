@@ -62,11 +62,20 @@ def process_resource():
     if resource_id:
         resource_value = resource_id
         resource_type = "scta"
+        trans = lbp_print.RemoteResource(resource_id)
     else:
         resource_value = resource_url
         resource_type = "url"
+        trans = lbp_print.UrlResource(resource_url)
 
-    response = handle_job(resource_value, resource_type)
+    cache = lbp_print.Cache("./cache")
+    digest = trans.create_hash()
+    if cache.contains(digest + ".pdf"):
+        response = {"Status": "Finished", "url": digest + ".pdf"}
+    else:
+        response = handle_job(resource_value, resource_type)
+        #response = handle_job(trans)
+
 
     return jsonify(response)
 
