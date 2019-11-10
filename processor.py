@@ -17,15 +17,6 @@ redis_connection = Redis(host="localhost")
 q = Queue(connection=redis_connection)
 
 
-def check_if_file_exists(url):
-    if resource_type == "scta":
-        trans = lbp_print.RemoteResource(id)
-    elif resource_type == "url":
-        trans = lbp_print.UrlResource(id)
-
-
-
-
 def handle_job(resource_value: str, resource_type: str) -> dict:
     try:
         logger.debug(f"Checking for job with the id {resource_value}")
