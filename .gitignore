@@ -3,6 +3,9 @@
 /upload/
 /cache/
 
+# Redis db dump
+dump.rdb
+
 # Log bin
 /logs/
 *.log
@@ -21,3 +24,6 @@ __pycache__
 
 ### macOS
 .DS_Store
+
+# Mypy
+.mypy_cache/

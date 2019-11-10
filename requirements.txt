@@ -1,25 +1,20 @@
-click==6.7
+Click==7.0
 docopt==0.6.2
-enum-compat==0.0.2
-eventlet==0.21.0
-Flask==0.12
-Flask-SocketIO==2.8.6
-Flask-WTF==0.14.2
-greenlet==0.4.12
-gunicorn==19.7.1
+Flask==1.1.1
+gunicorn==19.9.0
 isodate==0.5.4
-itsdangerous==0.24
-Jinja2==2.9.5
+itsdangerous==1.1.0
+Jinja2==2.10.1
+-e git+https://github.com/stenskjaer/lbp_print.git@master#egg=lbp_print
 -e git+https://github.com/lombardpress/lbppy.git@f272e44429fcbd3f19384471c9cfb3903100fb30#egg=lbppy
--e git+https://github.com/stenskjaer/lbp_print.git@3908f0a213414e67415e9a53c4982723cc986cbd#egg=lbp_print
-lxml==3.7.3
-MarkupSafe==1.0
+lxml==4.4.1
+MarkupSafe==1.1.1
 pyparsing==2.2.0
-python-engineio==1.3.1
-python-socketio==1.7.4
 rdflib==4.2.2
-six==1.10.0
+redis==3.3.8
+regex==2018.8.17
+rq==1.1.0
+samewords==0.5.3
 SPARQLWrapper==1.8.0
 untangle==1.1.0
-Werkzeug==0.12
-WTForms==2.1
+Werkzeug==0.15.5
