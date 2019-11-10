@@ -10,7 +10,7 @@ from flask.logging import default_handler
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 
-from processor import handle_job
+from processor import start_job, check_for_existing_job, job_status
 
 dictConfig(
     {
@@ -34,8 +34,6 @@ dictConfig(
     }
 )
 
-# App version
-#__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
 
@@ -68,14 +66,17 @@ def process_resource():
         resource_type = "url"
         trans = lbp_print.UrlResource(resource_url)
 
-    cache = lbp_print.Cache("./cache")
-    digest = trans.create_hash()
-    if cache.contains(digest + ".pdf"):
-        response = {"Status": "Finished", "url": digest + ".pdf"}
+    existing_job = check_for_existing_job(resource_value)
+    if existing_job:
+        response = job_status(existing_job)
     else:
-        response = handle_job(resource_value, resource_type)
-        #response = handle_job(trans)
-
+        cache = lbp_print.Cache("./cache")
+        digest = trans.create_hash()
+        if cache.contains(digest + ".pdf"):
+            response = {"Status": "Finished", "url": digest + ".pdf"}
+        else:
+            # response = start_job(resource_value, resource_type)
+            response = start_job(trans, resource_value)
 
     return jsonify(response)
 
