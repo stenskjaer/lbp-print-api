@@ -76,9 +76,14 @@ def process_resource():
     else:
         response = handle_job(resource_value, resource_type)
         #response = handle_job(trans)
+
+<<<<<<< HEAD
+=======
     #response = handle_job(resource_value, resource_type)
     #return jsonify(response)
+>>>>>>> feature/jeffupdates
 
+    response = handle_job(resource_value, resource_type)
     resp = make_response(jsonify(response),200)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
