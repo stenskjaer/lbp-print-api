@@ -51,7 +51,7 @@ def process_resource():
     resource_url = request.args.get("url")
     if not resource_id and not resource_url:
         error_message = {
-            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file,$
+            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file"
         }
         return jsonify(error_message)
     elif resource_id and resource_url:
