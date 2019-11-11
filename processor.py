@@ -13,7 +13,7 @@ from lbp_print.exceptions import SaxonError
 
 logger = logging.getLogger()
 lbp_config.cache_dir = "cache"
-redis_connection = Redis(host="localhost")
+redis_connection = Redis(host="redis")
 q = Queue(connection=redis_connection)
 
 
