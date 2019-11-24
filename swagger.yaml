@@ -1,0 +1,70 @@
+swagger: '2.0'
+info:
+  description: SCTA PRINT API
+  version: 1.0.0
+  title: SCTA PRINT API
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: jeffreycwitt@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: 'print.lombardpress.org'
+basePath: /api/v1
+schemes:
+  - http
+  - https
+paths:
+  '/resource':
+    get:
+      tags:
+        - Reviews
+      summary: Initiate a request to process and xml text available at the supplied url
+      description: ''
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          type: string
+          name: url
+          description: The URL of an available xml text
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Response'
+  '/cache/{filename}':
+    get:
+      summary: returns file
+      description: ''
+      produces:
+        - application/pdf
+      parameters:
+        - in: path
+          type: string
+          name: filename
+          description: provides pdf
+          required: true
+      responses:
+        200:
+          description: A PDF file.
+          schema:
+            type: file
+definitions:
+  Response:
+    type: object
+    required: [Status]
+    properties:
+      Status:
+        type: string
+        description: "indicates status of the process (e.g. started, converting, finished)"
+      url:
+        type: string
+        description: "a url where the processed PDF file can be found once finished"
+      error:
+        type: string
+        description: "reports error in processing"
+externalDocs:
+  description: Find out more about the DLL Review Registry
+  url: dll-review-registry.herokuapp.com/about
