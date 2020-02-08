@@ -1,5 +1,5 @@
 import logging
-
+import os
 import urllib
 
 from redis import Redis
@@ -13,7 +13,9 @@ from lbp_print.exceptions import SaxonError
 
 logger = logging.getLogger()
 lbp_config.cache_dir = "cache"
-redis_connection = Redis(host="localhost")
+redis_endpoint = "redis" if os.environ.get("REDIS_DOCKER") == "True" else "localhost"
+logger.warning(f"Logging redis endpoint: {redis_endpoint}")
+redis_connection = Redis(host=redis_endpoint)
 q = Queue(connection=redis_connection)
 
 

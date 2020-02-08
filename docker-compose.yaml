@@ -6,6 +6,8 @@ services:
     - 5000:5000
     volumes:
     - ../lbp-print-cache:/usr/src/app/cache
+    environment:
+    - REDIS_DOCKER=True
   queue-worker:
     build: .
     command: python3 worker.py
@@ -13,5 +15,7 @@ services:
     - redis
     volumes:
     - ../lbp-print-cache:/usr/src/app/cache
+    environment:
+    - REDIS_DOCKER=True
   redis:
     image: "redis:alpine"
