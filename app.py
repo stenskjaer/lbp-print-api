@@ -87,5 +87,11 @@ def process_resource():
 def return_cache(hashwithextension):
     return send_from_directory("cache", hashwithextension)
 
+@app.route('/api/v1/docs/', defaults={'path': None})
+@app.route("/api/v1/docs/<path:path>", methods=['GET'])
+def send_docs(path):
+    path = path if path else "index.html"
+    return send_from_directory('static/docs', path)
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
