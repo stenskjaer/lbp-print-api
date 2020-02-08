@@ -17,8 +17,6 @@ schemes:
 paths:
   '/resource':
     get:
-      tags:
-        - Reviews
       summary: Initiate a request to process and xml text available at the supplied url
       description: ''
       produces:
