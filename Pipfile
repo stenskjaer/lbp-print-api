@@ -13,7 +13,7 @@ isodate = "==0.5.4"
 itsdangerous = "==1.1.0"
 lbp-print = {editable = true,git = "https://github.com/stenskjaer/lbp_print.git",ref = "master"}
 lbppy = {editable = true,git = "https://github.com/lombardpress/lbppy.git",ref = "f272e44429fcbd3f19384471c9cfb3903100fb30"}
-lxml = "==4.4.1"
+lxml = "==4.6.3"
 pyparsing = "==2.2.0"
 rdflib = "==4.2.2"
 redis = "==3.3.8"
