@@ -49,6 +49,7 @@ def process_resource():
     logger.debug(f"Received request with args: {request.args}")
     resource_id = request.args.get("id")
     resource_url = request.args.get("url")
+    annolist = request.args.get("annolist")
     if not resource_id and not resource_url:
         error_message = {
             "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file"
@@ -64,17 +65,25 @@ def process_resource():
         resource_value = resource_id
         resource_type = "scta"
         trans = lbp_print.RemoteResource(resource_id)
+    elif (annolist == "true"):
+        resource_value = resource_url
+        resource_type = "annolist"
+        trans = resource_url
     else:
         resource_value = resource_url
         resource_type = "url"
         trans = lbp_print.UrlResource(resource_url)
 
     cache = lbp_print.Cache("./cache")
-    digest = trans.create_hash()
-    if cache.contains(digest + ".pdf"):
-        response = {"Status": "Finished", "url": digest + ".pdf"}
-    else:
-        response = handle_job(resource_value, resource_type)
+
+    digest = "unknown"
+    if resource_type != "annolist":
+        digest = trans.create_hash()
+
+    #if cache.contains(digest + ".pdf" and resource_type != "annolist"):
+     #   response = {"Status": "Finished", "url": digest + ".pdf"}
+    #else:
+    response = handle_job(resource_value, resource_type)
         #response = handle_job(trans)
     #response = handle_job(resource_value, resource_type)
     #return jsonify(response)
