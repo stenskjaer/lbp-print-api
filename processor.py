@@ -93,7 +93,8 @@ def convert_resource(id: str, resource_type: str) -> str:
     update_status(f"Converting {id} to pdf.", job)
     try:
         if resource_type == "annolist":
-            filename = compile_tex(clean_tex(convert_anno_list(trans)))
+            #filename = compile_tex(clean_tex(convert_anno_list(trans)))
+            filename = compile_tex(convert_anno_list(trans))
             #filename = clean_tex(convert_anno_list(trans))
             #filename = convert_anno_list(trans)
         else:
@@ -172,4 +173,5 @@ def compile_tex(tex_file):
                                   '-output-directory=cache'], stdout=subprocess.PIPE).stdout
     logging.debug(process_out.decode('utf-8'))
     output_basename, _ = os.path.splitext(tex_file.name)
-    return open(output_basename + '.pdf')
+    return output_basename + '.pdf'
+    #return open(output_basename + '.pdf')
