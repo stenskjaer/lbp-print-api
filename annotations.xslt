@@ -128,6 +128,7 @@
         
         
       <xsl:variable name="jsondoc" select="json-to-xml(j:unparsed-text('/Users/jcwitt/Downloads/classReader-2020-12-22-test.json'))"/>
+      <!-- <xsl:variable name="jsondoc" select="json-to-xml(j:unparsed-text('/Users/jcwitt/Downloads/porphyryReader-2021-09-30.json'))"/>  -->
         <xsl:for-each select="$jsondoc/j:array//j:map">
           <xsl:variable name="id" select="tokenize(./j:map[@key='target']/j:string[@key='source'], '/resource/')[2]"/>
           <xsl:message><xsl:value-of select="$id"/></xsl:message>
