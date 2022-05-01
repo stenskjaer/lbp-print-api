@@ -43,6 +43,10 @@ app = Flask(__name__, instance_path=os.getcwd())
 logger = logging.getLogger()
 logger.addHandler(default_handler)
 
+@app.route("/")
+def send_index():
+    return "Welcome to the Lbp Print API; See <a href='http://localhost:5000/api/v1/docs/'>Documentation</a>"
+
 
 @app.route("/api/v1/resource")
 def process_resource():

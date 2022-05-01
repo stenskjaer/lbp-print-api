@@ -1,4 +1,4 @@
-FROM ubuntu:19.10
+FROM ubuntu:21.10
 
 # set environment encoding and some base utils
 ENV LANG C.UTF-8
@@ -11,14 +11,21 @@ RUN apt-get update && apt-get install -y \
     # tectonic deps
     libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev \
     # python and libxml
-    libxml2-dev libxslt-dev python3.7-dev python3-pip 
+    libxml2-dev libxslt-dev python3.9 python3-pip 
 
 # texlive install
 RUN apt-get install -y xzdec texlive-full latexmk
 
 # texlive update and install reledmac
 RUN tlmgr init-usertree
-RUN tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet
+#RUN tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet
+
+#RUN tlmgr option repository https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
+#RUN tlmgr repository set https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
+RUN tlmgr repository add ftp://tug.org/historic/systems/texlive/2020/tlnet-final
+RUN tlmgr repository list
+RUN tlmgr repository remove http://mirror.ctan.org/systems/texlive/tlnet
+RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2020/tlnet-final
 RUN tlmgr update --self
 RUN tlmgr install reledmac
 
@@ -56,4 +63,5 @@ COPY texmf/ /root/texmf
 
 EXPOSE 80
 
-CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app
+#CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app
+CMD gunicorn --reload -w 1 -b 0.0.0.0:5000 app:app
