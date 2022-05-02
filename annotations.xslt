@@ -22,11 +22,13 @@
     <xsl:variable name="combinedversionnumber"><xsl:value-of select="$sourceversion"/>+<xsl:value-of select="$conversionversion"/></xsl:variable>
     <!-\- end versioning numbers -\->  
     <xsl:variable name="fs"><xsl:value-of select="/TEI/text/body/div/@xml:id"/></xsl:variable> -->
-    <xsl:variable name="name-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/Prosopography.xml</xsl:variable>
+    <!-- <xsl:variable name="name-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/Prosopography.xml</xsl:variable>
     <xsl:variable name="work-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/workscited.xml</xsl:variable>
-  <xsl:variable name="source-list-file">/Users/jcwitt/Projects/lombardpress/sourceTitleMaps/test.xml</xsl:variable>
+  <xsl:variable name="source-list-file">/Users/jcwitt/Projects/lombardpress/sourceTitleMaps/test.xml</xsl:variable> -->
   
-    <xsl:output method="text" indent="no"/>
+<xsl:param name="annolist">cache/annotations.json</xsl:param>
+<xsl:variable name="annolistfull">/usr/src/app/<xsl:value-of select="$annolist"/></xsl:variable>
+<xsl:output method="text" indent="no"/>
     <!-- <xsl:strip-space elements="*"/> -->
     
     <xsl:template match="text()">
@@ -39,9 +41,10 @@
         %this tex file was auto produced from TEI by lbp-print-xslt 1.0.0 critical stylesheets on <xsl:value-of  select="current-dateTime()"/> using the  <xsl:value-of select="base-uri(document(''))"/> 
         \documentclass[twoside, openright]{report}
         
-        % etex package is added to fix bug with eledmac package and mac-tex 2015
+        <!-- % etex package is added to fix bug with eledmac package and mac-tex 2015
         % See http://tex.stackexchange.com/questions/250615/error-when-compiling-with-tex-live-2015-eledmac-package
-        \usepackage{etex}
+        \usepackage{etex} -->
+        
         
         %imakeidx must be loaded beore eledmac
         \usepackage{imakeidx}
@@ -127,7 +130,7 @@
         \fancyhead[LE]{<xsl:value-of select="$combinedversionnumber"/>+\gitDescribe}-->
         
         
-      <xsl:variable name="jsondoc" select="json-to-xml(j:unparsed-text('/Users/jcwitt/Downloads/classReader-2020-12-22-test.json'))"/>
+      <xsl:variable name="jsondoc" select="json-to-xml(j:unparsed-text($annolistfull))"/>
       <!-- <xsl:variable name="jsondoc" select="json-to-xml(j:unparsed-text('/Users/jcwitt/Downloads/porphyryReader-2021-09-30.json'))"/>  -->
         <xsl:for-each select="$jsondoc/j:array//j:map">
           <xsl:variable name="id" select="tokenize(./j:map[@key='target']/j:string[@key='source'], '/resource/')[2]"/>
@@ -166,12 +169,18 @@
         
     </xsl:template>
     <xsl:template match="p">
+        <xsl:if test="not(ancestor::div)">
+        \beginnumbering
+        </xsl:if>
         <xsl:variable name="pn"><xsl:number level="any" from="tei:text"/></xsl:variable>
         \pstart
         \ledsidenote{\textbf{<xsl:value-of select="$pn"/>}}
         \edlabel{http://scta.info/resource/<xsl:value-of select="./@xml:id"/>}
         <xsl:apply-templates/>
         \pend
+        <xsl:if test="not(ancestor::div)">
+        \endnumbering
+      </xsl:if>
     </xsl:template>
     <xsl:template match="head">
     </xsl:template>
@@ -179,7 +188,6 @@
         \beginnumbering
         <xsl:apply-templates/>
         \endnumbering
-        
     </xsl:template>
     
 	<xsl:template match="pb">
@@ -214,10 +222,17 @@
 	
 	<xsl:template match="cit[quote]">
 	  <xsl:variable name="sourceid" select="./quote/@source"/>
-	  <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
+    
+    <xsl:variable name="source-title">test</xsl:variable>
+	  <xsl:variable name="topLevelExpression-title">test</xsl:variable>
+	  <xsl:variable name="author-title">test</xsl:variable>
+	  <xsl:variable name="item-title">test</xsl:variable>
+
+
+	  <!-- <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
 	  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
 	  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
-	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
+	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/> -->
 	  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
 	      <xsl:text>\edtext{\enquote{</xsl:text>
         <xsl:apply-templates select="quote"/>
@@ -247,10 +262,10 @@
     </xsl:template>
 		<xsl:template match="cit[ref]">
 		  <xsl:variable name="sourceid" select="./ref/@target"/>
-		  <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
-		  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
-		  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
-		  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
+		  <xsl:variable name="source-title">test</xsl:variable>
+		  <xsl:variable name="topLevelExpression-title">test</xsl:variable>
+		  <xsl:variable name="author-title">test</xsl:variable>
+		  <xsl:variable name="item-title">test</xsl:variable>
 		  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
 			<xsl:text>\edtext{</xsl:text>
 			<xsl:apply-templates select="ref"/>
@@ -337,13 +352,14 @@
         <xsl:variable name="nameid" select="substring-after(./@ref, '#')"/>
         <xsl:text>\name{</xsl:text>
         <xsl:apply-templates/>
-        <xsl:text>}</xsl:text><xsl:text>\index[persons]{</xsl:text><xsl:value-of select="document($name-list-file)//tei:person[@xml:id=$nameid]/tei:persName[1]"/><xsl:text>}</xsl:text>
+        <!-- <xsl:text>}</xsl:text><xsl:text>\index[persons]{</xsl:text><xsl:value-of select="document($name-list-file)//tei:person[@xml:id=$nameid]/tei:persName[1]"/><xsl:text>}</xsl:text> -->
+        <xsl:text>}</xsl:text><xsl:text>\index[persons]{</xsl:text><xsl:text>}</xsl:text>
     </xsl:template>
     <xsl:template match="title">
         <xsl:variable name="workid" select="substring-after(./@ref, '#')"/>
         <xsl:text>\worktitle{</xsl:text>
         <xsl:apply-templates/>
-      <xsl:text>}</xsl:text><xsl:text>\index[works]{</xsl:text><xsl:value-of select="document($work-list-file)//tei:bibl[@xml:id=$workid]/tei:title[1]"/><xsl:text>}</xsl:text>
+      <xsl:text>}</xsl:text><xsl:text>\index[works]{</xsl:text><xsl:text>}</xsl:text>
     </xsl:template>
     <xsl:template match="mentioned">
         <xsl:text>\enquote*{</xsl:text>

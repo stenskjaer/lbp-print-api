@@ -2,6 +2,8 @@ import logging
 import os
 import urllib
 
+import hashlib
+
 from redis import Redis
 from rq import get_current_job, Queue
 from rq.job import Job
@@ -93,8 +95,8 @@ def convert_resource(id: str, resource_type: str) -> str:
     update_status(f"Converting {id} to pdf.", job)
     try:
         if resource_type == "annolist":
-            #filename = compile_tex(clean_tex(convert_anno_list(trans)))
-            filename = compile_tex(convert_anno_list(trans))
+            filename = compile_tex(clean_tex(convert_anno_list(trans)))
+            #filename = compile_tex(convert_anno_list(trans))
             #filename = clean_tex(convert_anno_list(trans))
             #filename = convert_anno_list(trans)
         else:
@@ -107,15 +109,10 @@ def convert_resource(id: str, resource_type: str) -> str:
     return filename
 
 def convert_anno_list(annolist):
-    print("test")
-    xml_file = "/Users/jcwitt/Projects/lombardpress/lbp-print-api/annotations.xslt"
-    xsl_file = "/Users/jcwitt/Projects/lombardpress/lbp-print-api/annotations.xslt"
-    #logging.debug(f"Start conversion of {xml_file}")
-    tex_buffer = subprocess.run(['java', '-jar', os.path.join('/usr/local/Cellar/saxon/10.3/libexec/saxon-he-10.3.jar'), f'-s:{xml_file}', f'-xsl:{xsl_file}'],
-                                stdout=subprocess.PIPE).stdout.decode('utf-8')
-
-    print("test2")
+    # Output file name based on transcription object.
+    filehash = getHash(annolist)
     output="cache"    
+
     if output:
         if os.path.isdir(output):
             output_dir = output
@@ -130,10 +127,27 @@ def convert_anno_list(annolist):
                 for name in files:
                     os.remove(os.path.join(root, name))
 
-    # Output file name based on transcription object.
-    basename, _ = os.path.splitext(os.path.basename(xml_file))
-    with open(os.path.join(output_dir, basename + '.tex'), mode='w', encoding='utf-8') as f:
+    
+
+    localannotations = os.path.join(output_dir, filehash + ".json")
+    urllib.request.urlretrieve(annolist, localannotations)
+
+
+    
+    
+    xml_file = "/usr/src/app/annotations.xslt"
+    xsl_file = "/usr/src/app/annotations.xslt"
+    #logging.debug(f"Start conversion of {xml_file}")
+    tex_buffer = subprocess.run(['java', '-jar', os.path.join('/usr/share/java/saxon/saxon-he-10.8.jar'), f'-s:{xml_file}', f'-xsl:{xsl_file}', f"annolist={localannotations}"],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+   
+
+    
+    
+    with open(os.path.join(output_dir, filehash + '.tex'), mode='w', encoding='utf-8') as f:
         f.write(tex_buffer)
+    
     return f
 
 def clean_tex(tex_file):
@@ -149,7 +163,7 @@ def clean_tex(tex_file):
         (r' ([.,?!:;])', r'\1'),          # Remove redundant space before punctuation.
         (r' (\\edtext{})', r'\1'),        # Remove space before empty lemma app notes.
         (r'}(\\edtext{[^}]})', r'} \1'),  # Add missing space between adjacent app. notes.
-        (r'\s+', ' ')
+        # (r'\s+', ' ')
     ]
 
     buffer = open(tex_file.name).read()
@@ -169,9 +183,16 @@ def compile_tex(tex_file):
     Return: Output file object.
     """
     logging.info(f"Start compilation of {tex_file.name}")
-    process_out = subprocess.run(['latexmk', f'{tex_file.name}', '-xelatex',
+
+    
+    process_out = subprocess.run(['latexmk', f'{tex_file.name}', '-xelatex', 
                                   '-output-directory=cache'], stdout=subprocess.PIPE).stdout
     logging.debug(process_out.decode('utf-8'))
     output_basename, _ = os.path.splitext(tex_file.name)
     return output_basename + '.pdf'
     #return open(output_basename + '.pdf')
+
+
+def getHash(filepath):
+    filepathhash_sha1 = hashlib.sha256(filepath.encode('utf-8')).hexdigest()
+    return filepathhash_sha1

@@ -46,6 +46,16 @@ RUN updmap --user --enable Map=libertine.map
 # Java
 RUN apt-get install -y default-jre
 
+# install saxon
+RUN mkdir -p /usr/share/java/saxon
+RUN curl -L -o /usr/share/java/saxon/saxon.zip https://downloads.sourceforge.net/project/saxon/Saxon-HE/10/Java/SaxonHE10-8J.zip && \
+    unzip /usr/share/java/saxon/saxon.zip -d /usr/share/java/saxon && \
+    rm -rf /usr/share/java/saxon/noticies /usr/share/java/saxon/lib \
+      /usr/share/java/saxon/saxon10-8-test.jar /usr/share/java/saxon/saxon108-unpack.jar /usr/share/java/saxon/saxon.zip
+
+RUN printf '#!/bin/bash\nexec java  -jar /usr/share/java/saxon/saxon9he.jar "$@"' > /bin/saxon
+RUN chmod +x /bin/saxon
+
 # App directory and install
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
