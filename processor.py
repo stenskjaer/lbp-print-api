@@ -110,7 +110,11 @@ def convert_resource(id: str, resource_type: str) -> str:
 
 def convert_anno_list(annolist):
     # Output file name based on transcription object.
-    filehash = getHash(annolist)
+    if "http" in annolist:
+        filehash = getHash(annolist)
+    else:
+        filehash = annolist.split(".json")[0]
+    
     output="cache"    
 
     if output:
@@ -129,8 +133,18 @@ def convert_anno_list(annolist):
 
     
 
-    localannotations = os.path.join(output_dir, filehash + ".json")
-    urllib.request.urlretrieve(annolist, localannotations)
+    
+
+    logging.debug(f"LOGGING ANNO LIST NAME ++++++++ {annolist}")
+    
+    if "http" in annolist:
+        localannotations = os.path.join(output_dir, filehash + ".json")
+        urllib.request.urlretrieve(annolist, localannotations)
+    else:
+        localannotations = annolist
+
+
+    
 
 
     
@@ -143,9 +157,12 @@ def convert_anno_list(annolist):
 
    
 
+    if "http" in annolist:
+        texoutput = os.path.join(output_dir, filehash + '.tex')
+    else: 
+        texoutput = filehash + '.tex'
     
-    
-    with open(os.path.join(output_dir, filehash + '.tex'), mode='w', encoding='utf-8') as f:
+    with open(texoutput, mode='w', encoding='utf-8') as f:
         f.write(tex_buffer)
     
     return f

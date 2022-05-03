@@ -3,6 +3,8 @@ import json
 import os
 import subprocess
 
+import hashlib
+
 from logging.config import dictConfig
 from flask import Flask, request, make_response, jsonify
 from flask.logging import default_handler
@@ -88,13 +90,37 @@ def process_resource():
      #   response = {"Status": "Finished", "url": digest + ".pdf"}
     #else:
     response = handle_job(resource_value, resource_type)
-        #response = handle_job(trans)
+    #response = handle_job(trans)
     #response = handle_job(resource_value, resource_type)
     #return jsonify(response)
 
     resp = make_response(jsonify(response),200)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
+
+@app.route("/api/v1/annolist", methods=['POST'])
+def process_post_resource():
+
+    postdata = str(request.get_data().decode('utf-8'))
+    datahash = hashlib.sha256(postdata.encode('utf-8')).hexdigest()
+    resource_url = os.path.join("cache", datahash + '.json')
+
+    with open(resource_url, mode='w', encoding='utf-8') as f:
+        f.write(postdata)
+
+    resource_value = resource_url
+    resource_type = "annolist"
+    trans = resource_url
+
+    
+    response = handle_job(resource_value, resource_type)
+
+    resp = make_response(jsonify(response),200)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    
+    
+    return resp
+    
 
 @app.route("/api/v1/cache/<hashwithextension>", methods=['GET'])
 def return_cache(hashwithextension):
