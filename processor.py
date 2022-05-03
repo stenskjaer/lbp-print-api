@@ -131,23 +131,11 @@ def convert_anno_list(annolist):
                 for name in files:
                     os.remove(os.path.join(root, name))
 
-    
-
-    
-
-    logging.debug(f"LOGGING ANNO LIST NAME ++++++++ {annolist}")
-    
     if "http" in annolist:
         localannotations = os.path.join(output_dir, filehash + ".json")
         urllib.request.urlretrieve(annolist, localannotations)
     else:
         localannotations = annolist
-
-
-    
-
-
-    
     
     xml_file = "/usr/src/app/annotations.xslt"
     xsl_file = "/usr/src/app/annotations.xslt"
