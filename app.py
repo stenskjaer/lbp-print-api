@@ -14,6 +14,7 @@ import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 
 from processor import handle_job
+from processor import getSourceTitleMap
 
 dictConfig(
     {

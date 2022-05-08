@@ -23,8 +23,8 @@
     <!-\- end versioning numbers -\->  
     <xsl:variable name="fs"><xsl:value-of select="/TEI/text/body/div/@xml:id"/></xsl:variable> -->
     <!-- <xsl:variable name="name-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/Prosopography.xml</xsl:variable>
-    <xsl:variable name="work-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/workscited.xml</xsl:variable>
-  <xsl:variable name="source-list-file">/Users/jcwitt/Projects/lombardpress/sourceTitleMaps/test.xml</xsl:variable> -->
+    <xsl:variable name="work-list-file">/Users/jcwitt/Projects/lombardpress/lombardpress-lists/workscited.xml</xsl:variable>-->
+     <xsl:variable name="source-list-file">./cache/sourceTitleMap.xml</xsl:variable>
   
 <xsl:param name="annolist">cache/annotations.json</xsl:param>
 <xsl:variable name="annolistfull">/usr/src/app/<xsl:value-of select="$annolist"/></xsl:variable>
@@ -121,7 +121,7 @@
         \fi
         }
         
-        
+        \makeindex[name=sources,title=Index of sources,columns=1]
         
         
         \begin{document}
@@ -158,7 +158,7 @@
         
         
       
-      
+        \printindex[sources]
         \end{document}
     </xsl:template>
     
@@ -222,17 +222,10 @@
 	
 	<xsl:template match="cit[quote]">
 	  <xsl:variable name="sourceid" select="./quote/@source"/>
-    
-    <xsl:variable name="source-title">test</xsl:variable>
-	  <xsl:variable name="topLevelExpression-title">test</xsl:variable>
-	  <xsl:variable name="author-title">test</xsl:variable>
-	  <xsl:variable name="item-title">test</xsl:variable>
-
-
-	  <!-- <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
+    <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
 	  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
 	  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
-	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/> -->
+	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
 	  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
 	      <xsl:text>\edtext{\enquote{</xsl:text>
         <xsl:apply-templates select="quote"/>
@@ -261,12 +254,12 @@
 	  <!-- TODO UNCOMMENT WHEN YOU WANT TO ADD SOURCES INDEX WITH NEST; Seems like it will only work three nested deep -->
     </xsl:template>
 		<xsl:template match="cit[ref]">
-		  <xsl:variable name="sourceid" select="./ref/@target"/>
-		  <xsl:variable name="source-title">test</xsl:variable>
-		  <xsl:variable name="topLevelExpression-title">test</xsl:variable>
-		  <xsl:variable name="author-title">test</xsl:variable>
-		  <xsl:variable name="item-title">test</xsl:variable>
-		  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
+		  <xsl:variable name="sourceid" select="./quote/@source"/>
+    <xsl:variable name="source-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:longTitle[1]"/>
+	  <xsl:variable name="topLevelExpression-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:topLevelExpressionTitle[1]"/>
+	  <xsl:variable name="author-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:authorTitle[1]"/>
+	  <xsl:variable name="item-title" select="document($source-list-file)//sctastm:pair[sctastm:source=$sourceid]/sctastm:itemLevelExpressionTitle[1]"/>
+	  <xsl:variable name="source-title-tokenized" select="tokenize($source-title, ',')"/>
 			<xsl:text>\edtext{</xsl:text>
 			<xsl:apply-templates select="ref"/>
 			<xsl:text>}{</xsl:text>

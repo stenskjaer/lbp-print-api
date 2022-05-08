@@ -22,6 +22,10 @@ import os
 import lxml
 import re
 
+import json
+
+from SPARQLWrapper import SPARQLWrapper, JSON
+
 MODULE_DIR = os.path.dirname(__file__)
 
 logger = logging.getLogger()
@@ -137,6 +141,9 @@ def convert_anno_list(annolist):
     else:
         localannotations = annolist
     
+    ## save sourcetitlemap needed for index
+    getSourceTitleMap(localannotations)
+
     xml_file = "/usr/src/app/annotations.xslt"
     xsl_file = "/usr/src/app/annotations.xslt"
     #logging.debug(f"Start conversion of {xml_file}")
@@ -201,3 +208,95 @@ def compile_tex(tex_file):
 def getHash(filepath):
     filepathhash_sha1 = hashlib.sha256(filepath.encode('utf-8')).hexdigest()
     return filepathhash_sha1
+
+def getSourceTitleMap(annolist):
+    eids = getExpressionIdsFromAnnoList(annolist)
+    valuesString = " ".join(eids)
+    query = """
+    SELECT ?source ?long_title ?authorTitle ?topLevelExpressionTitle ?itemLevelExpressionTitle ?cquote 
+    WHERE {
+    VALUES ?resources { %s }
+	?e <http://scta.info/property/isMemberOf> ?resources .
+	{
+	    ?e <http://scta.info/property/source> ?source .
+	}
+    UNION
+	{
+	    ?e <http://scta.info/property/isInstanceOf> ?cquote .
+    	?cquote <http://scta.info/property/source> ?source .
+    }
+		OPTIONAL{
+  	?source <http://scta.info/property/longTitle> ?long_title .
+		}
+		?source <http://scta.info/property/isMemberOf> ?topLevelExpression .
+		?topLevelExpression <http://scta.info/property/level> '1' .
+		?topLevelExpression <http://purl.org/dc/elements/1.1/title> ?topLevelExpressionTitle .
+		OPTIONAL{
+		?topLevelExpression <http://www.loc.gov/loc.terms/relators/AUT> ?author .
+		?author <http://purl.org/dc/elements/1.1/title> ?authorTitle .
+		}
+		OPTIONAL{
+			{
+			?source <http://scta.info/property/isMemberOf> ?itemLevelExpression .
+			?itemLevelExpression <http://scta.info/property/structureType> <http://scta.info/resource/structureItem> .
+			?itemLevelExpression <http://purl.org/dc/elements/1.1/title> ?itemLevelExpressionTitle .
+			}
+			UNION
+			{
+			?source <http://scta.info/property/structureType> <http://scta.info/resource/structureItem> .
+			?source <http://purl.org/dc/elements/1.1/title> ?itemLevelExpressionTitle .
+			}
+		}
+    }"""%(valuesString)
+
+    sparql = SPARQLWrapper("https://sparql-docker.scta.info/ds/query")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    print(results["results"]["bindings"][0]["long_title"]["value"])
+
+    titleMap = {}
+    for r in results["results"]["bindings"]:
+        source = r["cquote"]["value"] if "cquote" in r else r["source"]["value"]
+        lt = r["long_title"]["value"] if "long_title" in r else "x"
+        et = r["topLevelExpressionTitle"]["value"]
+        at = r["authorTitle"]["value"] if "authorTitle" in r else "x"
+        it = r["itemLevelExpressionTitle"]["value"] if "itemLevelExpressionTitle" in r else "x"
+        #ite = lt.split(",").count > 1 ? lt.split(",").drop(1).join(", ").split(it)[0] + it : it
+        lt_split = lt.split(", ")
+        ite = "" 
+
+        if "Biblia" in lt:
+            ite = it
+        elif len(lt_split) > 2:
+            #puts lt.split(", ").drop(1).join(", ")
+            #puts it
+            #ite = ", ".join(lt.split(", ").pop(1)).split(it)[0] if ", ".join(lt.split(", ").pop(1)).split(it)[0] + it else it
+            ite = lt_split.pop(1).split(it)[0] if lt_split.pop(1).split(it)[0] + it else it
+        elif len(lt_split) > 1:
+            ite = lt_split.pop(1)
+        else:
+            ite = lt
+
+        cquote =  r["cquote"]["value"] if "cquote" in r else "x"
+        titleMap[source] = {"lt": lt, "et": et, "at": at, "it": it, "ite": ite }
+
+    mapElements = ""
+    for c, i in titleMap.items():
+        xml = "  <pair>\n    <source>" + c + "</source>\n    <longTitle>" + i["lt"] + "</longTitle>\n       <topLevelExpressionTitle>" + i["et"] + "</topLevelExpressionTitle>\n      <authorTitle>" + i["at"] + "</authorTitle>\n      <itemLevelExpressionTitle>" + i["ite"] + "</itemLevelExpressionTitle>\n      <itemLevelExpressionTitleOld>" + i["it"] + "</itemLevelExpressionTitleOld>\n  </pair>\n"
+        mapElements = mapElements + xml
+    
+    output = "<?xml version='1.0' encoding='UTF-8'?>\n<pairs xmlns='http://scta.info/ns/source-title-map'>\n" + mapElements + "</pairs>"
+
+    with open("./cache/sourceTitleMap.xml", 'w') as f:
+        f.write(output)
+        return f
+
+def getExpressionIdsFromAnnoList(annolist): 
+    ids = []
+    with open(annolist, 'r') as annolistfile:
+        anno_data = json.load(annolistfile)
+        for a in anno_data: 
+            ids.append("<http://scta.info/resource/" + a["target"]["source"].split("/")[-3] + ">")
+    
+    return ids
