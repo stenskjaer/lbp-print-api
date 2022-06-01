@@ -136,7 +136,7 @@
           <xsl:variable name="id" select="tokenize(./j:map[@key='target']/j:string[@key='source'], '/resource/')[2]"/>
           <xsl:message><xsl:value-of select="$id"/></xsl:message>
           <xsl:if test="$id and contains($id, 'transcription')">
-            <xsl:variable name="doc" select="document(concat('http://exist.scta.info/exist/apps/scta-app/document/', $id))"/>
+            <xsl:variable name="doc" select="document(concat('https://exist.scta.info/exist/apps/scta-app/document/', $id))"/>
             <!--\chapter*{<xsl:value-of select="$doc/TEI/teiHeader/fileDesc/titleStmt/title"/>}-->
             \bigskip
             <xsl:value-of select="$doc/TEI/teiHeader/fileDesc/titleStmt/title"/>

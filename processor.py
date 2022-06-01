@@ -143,7 +143,7 @@ def convert_anno_list(annolist):
     
     ## save sourcetitlemap needed for index
     getSourceTitleMap(localannotations)
-
+    logging.debug(f"test1 {localannotations}")
     xml_file = "/usr/src/app/annotations.xslt"
     xsl_file = "/usr/src/app/annotations.xslt"
     #logging.debug(f"Start conversion of {xml_file}")
@@ -222,8 +222,8 @@ def getSourceTitleMap(annolist):
 	}
     UNION
 	{
-	    ?e <http://scta.info/property/isInstanceOf> ?cquote .
-    	?cquote <http://scta.info/property/source> ?source .
+	    ?e <http://scta.info/property/source> ?bn .
+    	?bn <http://scta.info/property/source> ?source .
     }
 		OPTIONAL{
   	?source <http://scta.info/property/longTitle> ?long_title .
@@ -253,8 +253,7 @@ def getSourceTitleMap(annolist):
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
-    print(results["results"]["bindings"][0]["long_title"]["value"])
-
+    
     titleMap = {}
     for r in results["results"]["bindings"]:
         source = r["cquote"]["value"] if "cquote" in r else r["source"]["value"]
