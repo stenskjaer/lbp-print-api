@@ -24,7 +24,7 @@ RUN tlmgr option repository https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/te
 RUN tlmgr repository set https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
 RUN tlmgr repository add ftp://tug.org/historic/systems/texlive/2021/tlnet-final
 RUN tlmgr repository list
-RUN tlmgr repository remove http://mirror.ctan.org/systems/texlive/tlnet
+RUN tlmgr repository remove https://mirror.ctan.org/systems/texlive/tlnet
 RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
 RUN tlmgr update --self --all
 RUN tlmgr install reledmac
