@@ -30,12 +30,12 @@ RUN tlmgr update --self --all
 RUN tlmgr install reledmac
 
 # Manual install libertine
-RUN wget http://mirrors.ctan.org/install/fonts/libertine.tds.zip
-WORKDIR /texmf
-RUN unzip /libertine.tds.zip
-RUN texhash
-RUN updmap --user --enable Map=libertine.map
-
+#RUN wget http://mirrors.ctan.org/install/fonts/libertine.tds.zip
+#WORKDIR /texmf
+#RUN unzip /libertine.tds.zip
+#RUN texhash
+#RUN updmap --user --enable Map=libertine.map
+RUN tlmgr install libertine
 
 # # Install rust
 # RUN curl -f -L https://static.rust-lang.org/rustup.sh -O \
