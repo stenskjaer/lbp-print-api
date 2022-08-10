@@ -74,4 +74,5 @@ COPY texmf/ /root/texmf
 EXPOSE 80
 
 #CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app
+## TODO remove --reload flag in production
 CMD gunicorn --reload -w 1 -b 0.0.0.0:5000 app:app
