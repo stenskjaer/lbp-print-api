@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:22.04
 
 # set environment encoding and some base utils
 ENV LANG C.UTF-8
