@@ -5,37 +5,26 @@ ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 # set environment encoding and system dependencies
-RUN apt-get update && apt-get install -y \
-    # system utils
-    wget curl git \
-    # tectonic deps
-    libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev \
-    # python and libxml
-    libxml2-dev libxslt-dev python3.9 python3-pip 
+RUN apt update
+RUN apt upgrade -y
+# system utils
+RUN apt install -y wget curl git
+# tectonic deps
+RUN apt install -y libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev
+# Python
+RUN apt install -y libxml2-dev libxslt-dev python3 python3-pip
 
-# texlive install
-RUN apt-get install -y xzdec texlive-full latexmk
+RUN cd /tmp
+RUN wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+RUN zcat install-tl-unx.tar.gz | tar xf -
+#RUN cd install-tl-*
+#RUN perl ./install-tl --no-interaction --scheme=small
+RUN perl ./install-tl-*/install-tl --no-interaction --scheme=small
 
-# texlive update and install reledmac
-RUN tlmgr init-usertree
-#RUN tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet
+ENV PATH="$PATH:/usr/local/texlive/2022/bin/aarch64-linux"
+#RUN echo "PATH=$PATH:/usr/local/texlive/2022/bin/aarch64-linux">>/etc/environment
 
-RUN tlmgr option repository https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
-RUN tlmgr repository set https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
-RUN tlmgr repository add ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr repository list
-RUN tlmgr repository remove https://mirror.ctan.org/systems/texlive/tlnet
-RUN tlmgr option repository ftp://tug.org/historic/systems/texlive/2021/tlnet-final
-RUN tlmgr update --self --all
-RUN tlmgr install reledmac
-
-# Manual install libertine
-#RUN wget http://mirrors.ctan.org/install/fonts/libertine.tds.zip
-#WORKDIR /texmf
-#RUN unzip /libertine.tds.zip
-#RUN texhash
-#RUN updmap --user --enable Map=libertine.map
-RUN tlmgr install libertine
+RUN tlmgr install latexmk imakeidx reledmac babel-latin xargs bigfoot xstring titlesec csquotes gitinfo2 fontaxes mweights libertine draftwatermark
 
 # # Install rust
 # RUN curl -f -L https://static.rust-lang.org/rustup.sh -O \
@@ -44,7 +33,9 @@ RUN tlmgr install libertine
 # RUN $HOME/.cargo/bin/cargo install tectonic
 
 # Java
-RUN apt-get install -y default-jre
+RUN apt install -y default-jre
+# zip unzip
+RUN apt install zip unzip
 
 # install saxon
 RUN mkdir -p /usr/share/java/saxon
