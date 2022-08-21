@@ -4,11 +4,11 @@ job "lbp-print-api" {
   group "lbp-print-api-group" {
     count = 1
 
-    volume "lbp-print-api-cache" {
-      type      = "host"
-      read_only = true
-      source    = "lbp-print-api-cache"
-    }
+    #volume "lbp-print-api-cache" {
+    #  type      = "host"
+    #  read_only = true
+    #  source    = "lbp-print-api-cache"
+    #}
 
     network {
       port  "lbp-print-api-starticport"{
@@ -25,10 +25,10 @@ job "lbp-print-api" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.lbpprintapi-https.tls=true",
-        "traefik.http.routers.lbpprintapi-https.rule=Host(`print.lombardpress.com`)",
+        "traefik.http.routers.lbpprintapi-https.rule=Host(`print.lombardpress.org`)",
         "traefik.http.routers.lbpprintapi-https.tls.certresolver=myresolver",
-        "traefik.http.routers.lbpprintapi-https.tls.domains[0].main=print.lombardpress.com",
-        "traefik.http.routers.lbpprintapi-http.rule=Host(`print.lombardpress.com`)",
+        "traefik.http.routers.lbpprintapi-https.tls.domains[0].main=print.lombardpress.org",
+        "traefik.http.routers.lbpprintapi-http.rule=Host(`print.lombardpress.org`)",
         "traefik.http.routers.lbpprintapi-http.middlewares=https_only",
         
 
@@ -44,26 +44,32 @@ job "lbp-print-api" {
 
     task "app" {
       driver = "podman"
-
+      resources {
+        memory = 800
+        memory_max = 1000
+      }
       config {
         image = "jeffreycwitt/lbp-print-api"
-        volumes = [
-          "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
-        ]
+        #volumes = [
+        #  "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
+        #]
         ports = ["lbp-print-api-starticport"]
-        command = "gunicorn -w 1 -b 0.0.0.0:5000 app:app"
+        #command = "gunicorn -w 1 -b 0.0.0.0:5000 app:app"
       }
     }
     task "queue-worker" {
       driver = "podman"
-
+      resources {
+        memory = 800
+        memory_max = 1000
+      }
       config {
         image = "jeffreycwitt/lbp-print-api"
-        volumes = [
-          "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
-        ]
+        #volumes = [
+        #  "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
+        #]
         ports = ["workerport"]
-        command = "python3 worker.py"
+        #command = "python3 worker.py"
       }
       env{
         REDIS_ENDPOINT= "redis"
@@ -71,6 +77,10 @@ job "lbp-print-api" {
     }
     task "redis" {
       driver = "podman"
+      resources {
+        memory = 800
+        memory_max = 1000
+      }
       config {
         image = "redis:alpine"
         ports = ["redisport"]
@@ -80,4 +90,4 @@ job "lbp-print-api" {
       }
     }
   }
-}%
+}

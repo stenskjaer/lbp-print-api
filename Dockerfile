@@ -21,7 +21,8 @@ RUN zcat install-tl-unx.tar.gz | tar xf -
 #RUN perl ./install-tl --no-interaction --scheme=small
 RUN perl ./install-tl-*/install-tl --no-interaction --scheme=small
 
-ENV PATH="$PATH:/usr/local/texlive/2022/bin/aarch64-linux"
+#ENV PATH="$PATH:/usr/local/texlive/2022/bin/aarch64-linux"
+ENV PATH="$PATH:/usr/local/texlive/2022/bin/x86_64-linux"
 #RUN echo "PATH=$PATH:/usr/local/texlive/2022/bin/aarch64-linux">>/etc/environment
 
 RUN tlmgr install latexmk imakeidx reledmac babel-latin xargs bigfoot xstring titlesec csquotes gitinfo2 fontaxes mweights libertine draftwatermark
@@ -66,4 +67,5 @@ EXPOSE 80
 
 #CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app
 ## TODO remove --reload flag in production
-CMD gunicorn --reload -w 1 -b 0.0.0.0:5000 app:app
+#CMD gunicorn --reload -w 1 -b 0.0.0.0:5000 app:app
+CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app
