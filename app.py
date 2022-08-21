@@ -10,6 +10,9 @@ from flask import Flask, request, make_response, jsonify
 from flask.logging import default_handler
 from flask import send_from_directory
 
+from flask import Flask
+from flask_cors import CORS
+
 import lbp_print.core as lbp_print
 import lbp_print.config as lbp_config
 
@@ -42,6 +45,7 @@ dictConfig(
 #__VERSION__ = subprocess.check_output("git describe --tags", shell=True).decode()
 
 app = Flask(__name__, instance_path=os.getcwd())
+CORS(app)
 
 logger = logging.getLogger()
 logger.addHandler(default_handler)

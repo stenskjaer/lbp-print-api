@@ -64,7 +64,9 @@ def handle_job(resource_value: str, resource_type: str) -> dict:
     status = job.meta["progress"]
 
     if job.result:
-        response = {"Status": "Finished", "url": job.result}
+        resultFileName = job.result.split("/")[-1]
+        #response = {"Status": "Finished", "url": job.result}
+        response = {"Status": "Finished", "url": resultFileName}
         logger.debug(f"Job was finished. Result: " + job.result)
     elif job.is_failed:
         response = {"Status": "Failed. Resubmit to retry.", "error": status}

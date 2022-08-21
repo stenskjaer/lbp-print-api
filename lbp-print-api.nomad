@@ -4,18 +4,23 @@ job "lbp-print-api" {
   group "lbp-print-api-group" {
     count = 1
 
-    #volume "lbp-print-api-cache" {
-    #  type      = "host"
-    #  read_only = true
-    #  source    = "lbp-print-api-cache"
-    #}
+    volume "lbp-print-api-cache" {
+      type      = "host"
+      read_only = false
+      source    = "lbp-print-api-cache"
+    }
 
     network {
       port  "lbp-print-api-starticport"{
         to = 5000
       }
-      port "workerport" {}
-      port "redisport" {}
+      port "workerport" {
+        to = 5000
+      }
+      port "redisport" {
+        static = 6379
+        to = 6379
+      }
     }
 
     service {
@@ -50,11 +55,16 @@ job "lbp-print-api" {
       }
       config {
         image = "jeffreycwitt/lbp-print-api"
-        #volumes = [
-        #  "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
-        #]
+        volumes = [
+          # needs to be lower case z and not Capital Z to get permissions correct in this case; I'm not sure why
+          "/home/jcwitt/lbp-print-api-cache:/usr/src/app/cache:z"
+        ]
         ports = ["lbp-print-api-starticport"]
         #command = "gunicorn -w 1 -b 0.0.0.0:5000 app:app"
+        force_pull = true
+      }
+      env{
+        REDIS_ENDPOINT="${NOMAD_IP_redisport}"
       }
     }
     task "queue-worker" {
@@ -65,14 +75,17 @@ job "lbp-print-api" {
       }
       config {
         image = "jeffreycwitt/lbp-print-api"
-        #volumes = [
-        #  "/home/jcwitt/lbp-print-cache:/usr/src/app/cache:Z"
-        #]
+        volumes = [
+          # needs to be lower case z and not Capital Z to get permissions correct in this case; I'm not sure why
+          "/home/jcwitt/lbp-print-api-cache:/usr/src/app/cache:z"
+        ]
         ports = ["workerport"]
-        #command = "python3 worker.py"
+        force_pull = true
+        command = "python3"
+        args = ["worker.py"]
       }
       env{
-        REDIS_ENDPOINT= "redis"
+        REDIS_ENDPOINT="${NOMAD_IP_redisport}"
       }
     }
     task "redis" {
@@ -85,9 +98,9 @@ job "lbp-print-api" {
         image = "redis:alpine"
         ports = ["redisport"]
       }
-      env{
-        REDIS_ENDPOINT= "redis"
-      }
+      #env{
+      #  REDIS_ENDPOINT= "redis"
+      #}
     }
   }
 }
