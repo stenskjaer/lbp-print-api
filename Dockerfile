@@ -21,7 +21,7 @@ RUN zcat install-tl-unx.tar.gz | tar xf -
 #RUN perl ./install-tl --no-interaction --scheme=small
 RUN perl ./install-tl-*/install-tl --no-interaction --scheme=small
 
-#ENV PATH="$PATH:/usr/local/texlive/2022/bin/aarch64-linux"
+ENV PATH="$PATH:/usr/local/texlive/2022/bin/aarch64-linux"
 ENV PATH="$PATH:/usr/local/texlive/2022/bin/x86_64-linux"
 #RUN echo "PATH=$PATH:/usr/local/texlive/2022/bin/aarch64-linux">>/etc/environment
 

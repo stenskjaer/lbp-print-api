@@ -55,7 +55,7 @@
         \usepackage{titlesec}
         
         \usepackage [latin]{babel}
-        \usepackage[style=american] {csquotes}
+        \usepackage[style=american, maxlevel=4]{csquotes}
         \usepackage{geometry}
         \usepackage{fancyhdr}
         \usepackage[letter, center, cam]{crop}
