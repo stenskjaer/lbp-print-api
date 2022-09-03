@@ -122,3 +122,8 @@ The app should be available on [localhost](http://localhost).
 # Contribute
 
 All pull requests and issue reports are very welcome! ♡
+
+
+to build for a specific architecture run as follows: 
+
+`docker buildx build --platform linux/amd64 -t jeffreycwitt/lbp-print-api:latest --push .`
