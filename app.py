@@ -52,60 +52,61 @@ logger.addHandler(default_handler)
 
 @app.route("/")
 def send_index():
-    return "Welcome to the Lbp Print API; See <a href='http://localhost:5000/api/v1/docs/'>Documentation</a>"
+    #return "Welcome to the Lbp Print API; See <a href='http://localhost:5000/api/v1/docs/'>Documentation</a>"
+    return "Welcome to the Lbp Print API; See <a href='https://print.lombardpress.org/api/v1/docs/'>Documentation</a>" 
 
+# commenting out this route due to security concerns of allowing users to supply malicious xml files
+# @app.route("/api/v1/resource")
+# def process_resource():
+#     logger.debug(f"Received request with args: {request.args}")
+#     resource_id = request.args.get("id")
+#     resource_url = request.args.get("url")
+#     annolist = request.args.get("annolist")
+#     if not resource_id and not resource_url:
+#         error_message = {
+#             "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file"
+#         }
+#         return jsonify(error_message)
+#     elif resource_id and resource_url:
+#         error_message = {
+#             "error": "One of the parameters 'id' and 'url' must be given, but not both."
+#         }
+#         return jsonify(error_message)
 
-@app.route("/api/v1/resource")
-def process_resource():
-    logger.debug(f"Received request with args: {request.args}")
-    resource_id = request.args.get("id")
-    resource_url = request.args.get("url")
-    annolist = request.args.get("annolist")
-    if not resource_id and not resource_url:
-        error_message = {
-            "error": "One of the parameters 'id' and 'url' must be given. 'id' must container an SCTA resource id, e.g. scta.info/resource/lectio1. 'url' must contain an http reference to an XML file"
-        }
-        return jsonify(error_message)
-    elif resource_id and resource_url:
-        error_message = {
-            "error": "One of the parameters 'id' and 'url' must be given, but not both."
-        }
-        return jsonify(error_message)
+#     if resource_id:
+#         resource_value = resource_id
+#         resource_type = "scta"
+#         trans = lbp_print.RemoteResource(resource_id)
+#     elif (annolist == "true"):
+#         resource_value = resource_url
+#         resource_type = "annolist"
+#         trans = resource_url
+#     else:
+#         resource_value = resource_url
+#         resource_type = "url"
+#         trans = lbp_print.UrlResource(resource_url)
 
-    if resource_id:
-        resource_value = resource_id
-        resource_type = "scta"
-        trans = lbp_print.RemoteResource(resource_id)
-    elif (annolist == "true"):
-        resource_value = resource_url
-        resource_type = "annolist"
-        trans = resource_url
-    else:
-        resource_value = resource_url
-        resource_type = "url"
-        trans = lbp_print.UrlResource(resource_url)
+#     cache = lbp_print.Cache("./cache")
 
-    cache = lbp_print.Cache("./cache")
+#     digest = "unknown"
+#     if resource_type != "annolist":
+#         digest = trans.create_hash()
 
-    digest = "unknown"
-    if resource_type != "annolist":
-        digest = trans.create_hash()
+#     #if cache.contains(digest + ".pdf" and resource_type != "annolist"):
+#      #   response = {"Status": "Finished", "url": digest + ".pdf"}
+#     #else:
+#     response = handle_job(resource_value, resource_type)
+#     #response = handle_job(trans)
+#     #response = handle_job(resource_value, resource_type)
+#     #return jsonify(response)
 
-    #if cache.contains(digest + ".pdf" and resource_type != "annolist"):
-     #   response = {"Status": "Finished", "url": digest + ".pdf"}
-    #else:
-    response = handle_job(resource_value, resource_type)
-    #response = handle_job(trans)
-    #response = handle_job(resource_value, resource_type)
-    #return jsonify(response)
-
-    resp = make_response(jsonify(response),200)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    return resp
+#     resp = make_response(jsonify(response),200)
+#     resp.headers['Access-Control-Allow-Origin'] = '*'
+#     return resp
 
 @app.route("/api/v1/annolist", methods=['POST'])
 def process_post_resource():
-
+    
     postdata = str(request.get_data().decode('utf-8'))
     datahash = hashlib.sha256(postdata.encode('utf-8')).hexdigest()
     resource_url = os.path.join("cache", datahash + '.json')
@@ -117,8 +118,15 @@ def process_post_resource():
     resource_type = "annolist"
     trans = resource_url
 
-    
-    response = handle_job(resource_value, resource_type)
+    ## create an option for useCache parameter so we can force a refresh instead of using cached version
+    use_cache = request.args.get('useCache', 'true').lower() != 'false'
+    cache = lbp_print.Cache("./cache")
+    if cache.contains(datahash + ".pdf") and use_cache:
+        logger.debug(f"using cache here")
+        response = {"Status": "Finished", "url": datahash + ".pdf"}
+    else:
+        logger.debug(f"NOT using cache here")
+        response = handle_job(resource_value, resource_type)
 
     resp = make_response(jsonify(response),200)
     resp.headers['Access-Control-Allow-Origin'] = '*'
