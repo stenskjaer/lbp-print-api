@@ -114,16 +114,19 @@ def process_post_resource():
     with open(resource_url, mode='w', encoding='utf-8') as f:
         f.write(postdata)
 
+    format_param = request.args.get('format')
+    resource_type = "epub" if format_param == "epub" else "annolist"
     resource_value = resource_url
-    resource_type = "annolist"
+    #resource_type = "annolist"
+    suffix = ".epub" if resource_type == "epub" else ".pdf"
     trans = resource_url
 
     ## create an option for useCache parameter so we can force a refresh instead of using cached version
     use_cache = request.args.get('useCache', 'true').lower() != 'false'
     cache = lbp_print.Cache("./cache")
-    if cache.contains(datahash + ".pdf") and use_cache:
+    if cache.contains(datahash + suffix) and use_cache:
         logger.debug(f"using cache here")
-        response = {"Status": "Finished", "url": datahash + ".pdf"}
+        response = {"Status": "Finished", "url": datahash + suffix}
     else:
         logger.debug(f"NOT using cache here")
         response = handle_job(resource_value, resource_type)

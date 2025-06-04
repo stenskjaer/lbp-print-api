@@ -1,7 +1,7 @@
 import logging
 import os
 import urllib
-
+import zipfile
 import hashlib
 
 from redis import Redis
@@ -92,6 +92,8 @@ def convert_resource(id: str, resource_type: str) -> str:
         trans = lbp_print.RemoteResource(id)
     elif resource_type == "annolist":
         trans = id
+    elif resource_type == "epub":
+        trans = id
     elif resource_type == "url":
         trans = lbp_print.UrlResource(id)
     else:
@@ -105,6 +107,8 @@ def convert_resource(id: str, resource_type: str) -> str:
             #filename = compile_tex(convert_anno_list(trans))
             #filename = clean_tex(convert_anno_list(trans))
             #filename = convert_anno_list(trans)
+        elif resource_type == "epub":
+            filename = convert_anno_list_epub(trans)
         else:
             filename = lbp_print.Tex(trans).process(output_format="pdf")
     except SaxonError as exc:
@@ -146,8 +150,8 @@ def convert_anno_list(annolist):
     ## save sourcetitlemap needed for index
     getSourceTitleMap(localannotations)
     logging.debug(f"test1 {localannotations}")
-    xml_file = "/usr/src/app/annotations.xslt"
-    xsl_file = "/usr/src/app/annotations.xslt"
+    xml_file = "/usr/src/app/annotationsNew.xslt"
+    xsl_file = "/usr/src/app/annotationsNew.xslt"
     #logging.debug(f"Start conversion of {xml_file}")
     tex_buffer = subprocess.run(['java', '-jar', os.path.join('/usr/share/java/saxon/saxon-he-10.8.jar'), f'-s:{xml_file}', f'-xsl:{xsl_file}', f"annolist={localannotations}"],
                                 stdout=subprocess.PIPE).stdout.decode('utf-8')
@@ -163,6 +167,139 @@ def convert_anno_list(annolist):
         f.write(tex_buffer)
     
     return f
+
+def convert_anno_list_epub(annolist):
+    # Output file name based on transcription object.
+    if "http" in annolist:
+        filehash = getHash(annolist)
+    else:
+        #filehash = annolist.split(".json")[0]
+        filehash = os.path.splitext(os.path.basename(annolist))[0]
+    
+    output="cache"
+
+    if output:
+        if os.path.isdir(output):
+            output_dir = output
+        else:
+            raise ValueError(f"The supplied output dir, {output}, is not a directory.")
+    else:
+        output_dir = 'output'
+        if not output_dir in os.listdir('.'):
+            os.mkdir(output_dir)
+        else:
+            for (root, dirs, files) in os.walk(output_dir):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+
+    # create paths
+    # Paths and filenames
+    work_dir = output_dir + "/tmp/epub_build"
+    os.makedirs(work_dir, exist_ok=True)
+    meta_inf = os.path.join(work_dir, "META-INF")
+    oebps = os.path.join(work_dir, "OEBPS")
+    os.makedirs(meta_inf, exist_ok=True)
+    os.makedirs(oebps, exist_ok=True)
+
+
+    if "http" in annolist:
+        localannotations = os.path.join(output_dir, filehash + ".json")
+        urllib.request.urlretrieve(annolist, localannotations)
+    else:
+        localannotations = annolist
+    
+    ## save sourcetitlemap needed for index
+    getSourceTitleMap(localannotations)
+    logging.debug(f"test1 {localannotations}")
+    xml_file = "/usr/src/app/annotationsNewEpub.xslt"
+    xsl_file = "/usr/src/app/annotationsNewEpub.xslt"
+    #logging.debug(f"Start conversion of {xml_file}")
+    tex_buffer = subprocess.run(['java', '-jar', os.path.join('/usr/share/java/saxon/saxon-he-10.8.jar'), f'-s:{xml_file}', f'-xsl:{xsl_file}', f"annolist={localannotations}"],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+    output_xhtml_path = os.path.join(oebps, "content.xhtml")
+
+    with open(output_xhtml_path, mode='w', encoding='utf-8') as f:
+        f.write(tex_buffer)
+    
+    # Step 2: Create the required files
+    # mimetype (must be uncompressed and first in the ZIP)
+    with open(os.path.join(work_dir, "mimetype"), "w", encoding="utf-8") as f:
+        f.write("application/epub+zip")
+
+    # META-INF/container.xml
+    with open(os.path.join(meta_inf, "container.xml"), "w", encoding="utf-8") as f:
+        f.write("""<?xml version="1.0"?>
+                <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+                <rootfiles>
+                    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+                </rootfiles>
+                </container>""")
+
+    # OEBPS/content.opf (simplified, no images/styles)
+    with open(os.path.join(oebps, "content.opf"), "w", encoding="utf-8") as f:
+        f.write(f"""<?xml version='1.0' encoding='utf-8'?>
+            <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0">
+            <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+                <dc:title>Your Book Title</dc:title>
+                <dc:identifier id="BookID">urn:uuid:123456</dc:identifier>
+                <dc:language>en</dc:language>
+            </metadata>
+            <manifest>
+                <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+                <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+            </manifest>
+            <spine toc="ncx">
+                <itemref idref="content"/>
+            </spine>
+            </package>""")
+
+    # OEBPS/toc.ncx (minimal TOC)
+    toc_xml_file = "/usr/src/app/annotationsNewToc.xslt"
+    toc_xsl_file = "/usr/src/app/annotationsNewToc.xslt"
+    #logging.debug(f"Start conversion of {xml_file}")
+    toc_buffer = subprocess.run(['java', '-jar', os.path.join('/usr/share/java/saxon/saxon-he-10.8.jar'), f'-s:{toc_xml_file}', f'-xsl:{toc_xsl_file}', f"annolist={localannotations}"],
+                                stdout=subprocess.PIPE).stdout.decode('utf-8')
+    output_toc_path = os.path.join(oebps, "toc.ncx")
+    with open(output_toc_path, mode='w', encoding='utf-8') as f:
+            f.write(toc_buffer)
+
+    # with open(os.path.join(oebps, "toc.ncx"), "w", encoding="utf-8") as f:
+    #     f.write("""<?xml version="1.0" encoding="UTF-8"?>
+    #         <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+    #         <head>
+    #             <meta name="dtb:uid" content="urn:uuid:123456"/>
+    #             <meta name="dtb:depth" content="1"/>
+    #             <meta name="dtb:totalPageCount" content="0"/>
+    #             <meta name="dtb:maxPageNumber" content="0"/>
+    #         </head>
+    #         <docTitle><text>Your Book Title</text></docTitle>
+    #         <navMap>
+    #             <navPoint id="navPoint-1" playOrder="1">
+    #             <navLabel><text>Start</text></navLabel>
+    #             <content src="content.xhtml"/>
+    #             </navPoint>
+    #         </navMap>
+    #         </ncx>""")
+
+    # Step 3: Create EPUB ZIP
+    epub_path = output_dir + "/" + filehash + ".epub"
+    with open(epub_path, 'wb') as epub_file:
+        # Write mimetype first, no compression
+        with open(os.path.join(work_dir, "mimetype"), 'rb') as f:
+            epub_file.write(f.read())
+
+    # Add the rest using ZipFile (excluding mimetype)
+    with zipfile.ZipFile(epub_path, 'a', compression=zipfile.ZIP_DEFLATED) as epub:
+        for folder in ['META-INF', 'OEBPS']:
+            for root, _, files in os.walk(os.path.join(work_dir, folder)):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(full_path, work_dir)
+                    epub.write(full_path, rel_path)
+
+    print(f"✅ EPUB created at {epub_path}")
+    return epub_path
 
 def clean_tex(tex_file):
     """Clean the content of the tex file for different whitespace problems.
